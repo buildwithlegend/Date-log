@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暖心日誌 - Warm Notes</title>
+    <title>暖心日誌與相簿 - Warm Notes & Album</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -28,7 +28,6 @@
                             900: '#78350f',
                         },
                         warmBg: '#fbf7f4',
-                        warmCard: '#ffffff',
                     },
                     fontFamily: {
                         sans: ['Noto Sans TC', 'sans-serif'],
@@ -45,7 +44,7 @@
         }
         .line-clamp-custom {
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -67,147 +66,248 @@
 </head>
 <body class="font-sans text-amber-900 min-h-screen flex flex-col justify-between">
 
-    <!-- Header -->
     <header class="sticky top-0 z-30 bg-amber-50/90 backdrop-blur-md border-b border-amber-200/60 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-white shadow-md">
                     <i class="fa-solid font-bold text-lg fa-book-open"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-amber-900 tracking-wide">暖心日誌</h1>
-                    <p class="text-xs text-amber-600">紀錄生活中的美好片段</p>
+                    <p class="text-xs text-amber-600">紀錄生活與照片的微醺時光</p>
                 </div>
             </div>
 
-            <!-- Controls: Filter & Add Button -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <div class="relative flex-1 sm:flex-initial">
-                    <input type="date" id="filter-date" class="w-full sm:w-auto bg-white border border-amber-200 rounded-xl px-3 py-2 text-sm text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm transition">
+            <!-- Tab Switcher -->
+            <div class="flex bg-amber-100/70 p-1 rounded-xl gap-1">
+                <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900">
+                    <i class="fa-regular fa-clone mr-1.5"></i>卡片日誌
+                </button>
+                <button id="tab-album-btn" onclick="switchTab('album')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900">
+                    <i class="fa-regular fa-images mr-1.5"></i>照片相簿
+                </button>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div id="cards-controls" class="flex items-center gap-2">
+                    <input type="date" id="filter-date" class="bg-white border border-amber-200 rounded-xl px-3 py-1.5 text-xs text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm">
+                    <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-2.5 py-1.5 rounded-xl text-xs transition">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button onclick="openCreateCardModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-3.5 py-1.5 rounded-xl text-xs shadow-md hover:shadow-lg transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> 新建卡片
+                    </button>
                 </div>
-                <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-2 rounded-xl text-sm transition">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                </button>
-                <button onclick="openCreateModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-plus"></i> 新建卡片
-                </button>
+                <div id="album-controls" class="hidden">
+                    <button onclick="openUploadPhotoModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-3.5 py-1.5 rounded-xl text-xs shadow-md hover:shadow-lg transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-upload"></i> 上傳相片
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
     <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
-        <!-- Date Info Bar -->
-        <div id="filter-info" class="hidden mb-6 bg-amber-100/70 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex justify-between items-center">
-            <span>顯示日期：<strong id="filter-date-display"></strong> 的卡片</span>
-            <button onclick="resetFilter()" class="text-amber-600 hover:text-amber-900 font-medium underline text-xs">顯示全部</button>
-        </div>
-
-        <!-- Cards Container -->
-        <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamic Cards inserted here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
-            <div class="w-20 h-20 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-3xl mb-4">
-                <i class="fa-regular fa-folder-open"></i>
+        <!-- Section 1: Cards View -->
+        <section id="cards-view" class="space-y-6">
+            <div id="filter-info" class="hidden bg-amber-100/70 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex justify-between items-center">
+                <span>顯示日期：<strong id="filter-date-display"></strong> 的日誌卡片</span>
+                <button onclick="resetFilter()" class="text-amber-600 hover:text-amber-900 font-medium underline">顯示全部</button>
             </div>
-            <h3 class="text-lg font-medium text-amber-800 mb-1">尚無相關卡片</h3>
-            <p class="text-sm text-amber-600 mb-4">開始記錄今天的心情或選擇其他日期吧！</p>
-            <button onclick="openCreateModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm transition">新增卡片</button>
-        </div>
+
+            <!-- Cards Container -->
+            <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- Cards Empty State -->
+            <div id="cards-empty" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3">
+                    <i class="fa-regular fa-folder-open"></i>
+                </div>
+                <h3 class="text-base font-medium text-amber-800 mb-1">尚無日誌卡片</h3>
+                <p class="text-xs text-amber-600 mb-4">開始記錄今天的心情、內容並附上照片吧！</p>
+                <button onclick="openCreateCardModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">新建卡片</button>
+            </div>
+        </section>
+
+        <!-- Section 2: Photo Album View -->
+        <section id="album-view" class="hidden space-y-6">
+            <div class="flex justify-between items-center border-b border-amber-200/60 pb-3">
+                <h2 class="text-lg font-bold text-amber-900 flex items-center gap-2">
+                    <i class="fa-solid fa-camera-retro text-amber-500"></i> 回憶相簿精選
+                </h2>
+                <span id="album-count" class="text-xs text-amber-600 font-medium">共 0 張相片</span>
+            </div>
+
+            <!-- Album Grid -->
+            <div id="album-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+
+            <!-- Album Empty State -->
+            <div id="album-empty" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3">
+                    <i class="fa-regular fa-image"></i>
+                </div>
+                <h3 class="text-base font-medium text-amber-800 mb-1">相簿是空的</h3>
+                <p class="text-xs text-amber-600 mb-4">把美好的照片珍藏在這裡吧！</p>
+                <button onclick="openUploadPhotoModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">上傳相片</button>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
     <footer class="mt-12 py-6 text-center text-xs text-amber-600/80 border-t border-amber-200/40">
-        <p>© Warm Notes 日誌卡片網頁 · 暖心紀錄每一天</p>
+        <p>© Warm Notes 日誌卡片與相簿網頁 · 暖心紀錄每一天</p>
     </footer>
 
-    <!-- Modal: Create New Card -->
-    <div id="modal-create" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="modal-card-form" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden transform transition-all">
             <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
-                <h3 class="font-bold text-amber-900 flex items-center gap-2">
+                <h3 id="card-form-title" class="font-bold text-amber-900 flex items-center gap-2 text-sm">
                     <i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增主題卡片
                 </h3>
-                <button onclick="closeCreateModal()" class="text-amber-400 hover:text-amber-700 transition">
+                <button onclick="closeCardFormModal()" class="text-amber-400 hover:text-amber-700 transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <form id="create-card-form" onsubmit="handleCreateCard(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">主題 (Topic)</label>
-                    <input type="text" id="card-topic" placeholder="例如：飲食日記、心得體會、旅遊..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <form id="card-form" onsubmit="handleCardFormSubmit(event)" class="p-6 space-y-4 text-xs">
+                <input type="hidden" id="card-edit-id">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-amber-800 mb-1">主題 (Topic)</label>
+                        <input type="text" id="form-card-topic" placeholder="例：飲食、旅遊..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-amber-800 mb-1">日期 (Date)</label>
+                        <input type="date" id="form-card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">標題 (Title)</label>
-                    <input type="text" id="card-title" placeholder="請輸入標題" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <label class="block font-semibold text-amber-800 mb-1">標題 (Title)</label>
+                    <input type="text" id="form-card-title" placeholder="請輸入標題" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">日期 (Date)</label>
-                    <input type="date" id="card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <label class="block font-semibold text-amber-800 mb-1">照片 (Photo - 選填)</label>
+                    <input type="file" id="form-card-image" accept="image/*" onchange="previewCardImage(event)" class="w-full text-amber-700 border border-amber-200 rounded-xl p-1.5 bg-amber-50/30 text-xs">
+                    <div id="card-image-preview-container" class="hidden mt-2 relative rounded-xl overflow-hidden border border-amber-200 h-36 bg-amber-50 flex items-center justify-center">
+                        <img id="card-image-preview" class="max-h-full max-w-full object-contain" src="" alt="預覽">
+                        <button type="button" onclick="removeCardImagePreview()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600 transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">內容 (Content)</label>
-                    <textarea id="card-content" rows="5" placeholder="寫下任何你想紀錄的文字..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+                    <label class="block font-semibold text-amber-800 mb-1">內容 (Content)</label>
+                    <textarea id="form-card-content" rows="4" placeholder="寫下任何你想紀錄的內容..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-xl text-sm text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl text-sm text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">發布卡片</button>
+                    <button type="button" onclick="closeCardFormModal()" class="px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">儲存卡片</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Card Full Detail & Comments -->
-    <div id="modal-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="modal-card-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
-            <!-- Detail Header -->
-            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center shrink-0">
+            <div class="bg-amber-50 px-6 py-3 border-b border-amber-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2">
-                    <span id="detail-topic" class="text-xs px-2.5 py-1 rounded-md bg-amber-200 text-amber-800 font-medium">主題</span>
+                    <span id="detail-topic" class="text-xs px-2.5 py-0.5 rounded-md bg-amber-200 text-amber-800 font-medium">主題</span>
                     <span id="detail-date" class="text-xs text-amber-600"><i class="fa-regular fa-calendar mr-1"></i>2026-09-25</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="detail-delete-btn" title="刪除卡片" class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition">
+                <div class="flex items-center gap-1.5">
+                    <button id="detail-edit-btn" title="編輯卡片" class="text-amber-600 hover:text-amber-800 p-1.5 rounded-lg hover:bg-amber-100 transition text-xs">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button id="detail-delete-btn" title="刪除卡片" class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition text-xs">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
-                    <button onclick="closeDetailModal()" class="text-amber-400 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-100 transition">
+                    <button onclick="closeCardDetailModal()" class="text-amber-400 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-100 transition text-xs">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Detail Body (Scrollable) -->
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
-                <div>
-                    <h2 id="detail-title" class="text-2xl font-bold text-amber-900 mb-3">卡片標題</h2>
-                    <p id="detail-content" class="text-amber-800 leading-relaxed whitespace-pre-wrap text-base border-b border-amber-100 pb-6">完整內容...</p>
+            <!-- Detail Scroll Area -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+                <h2 id="detail-title" class="text-xl font-bold text-amber-900">卡片標題</h2>
+                
+                <div id="detail-image-box" class="hidden rounded-xl overflow-hidden bg-amber-50 border border-amber-100 max-h-80 flex items-center justify-center">
+                    <img id="detail-image" src="" alt="圖片" class="max-h-80 w-auto object-contain">
                 </div>
 
-                <!-- Detail Comments Section -->
-                <div class="space-y-4">
-                    <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
-                        <i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)
+                <p id="detail-content" class="text-amber-800 leading-relaxed whitespace-pre-wrap text-sm border-b border-amber-100 pb-5">卡片完整內文...</p>
+
+                <!-- Comments -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                        <i class="fa-regular fa-comments text-amber-500"></i> 留言交流 (<span id="detail-comment-count">0</span>)
                     </h4>
                     
-                    <!-- Comment Input -->
                     <div class="flex gap-2">
-                        <input type="text" id="detail-comment-input" placeholder="撰寫公開留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm whitespace-nowrap">送出</button>
+                        <input type="text" id="detail-comment-input" placeholder="撰寫留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-medium transition shadow-sm whitespace-nowrap">送出</button>
                     </div>
 
-                    <!-- Comment List -->
-                    <div id="detail-comments-list" class="space-y-2 pt-2">
-                        <!-- Comments inserted dynamically -->
-                    </div>
+                    <div id="detail-comments-list" class="space-y-2 pt-1"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
+    <div id="modal-album-upload" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-amber-100 overflow-hidden">
+            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
+                <h3 class="font-bold text-amber-900 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-camera text-amber-500"></i> 上傳相片至相簿
+                </h3>
+                <button onclick="closeUploadPhotoModal()" class="text-amber-400 hover:text-amber-700 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="album-upload-form" onsubmit="handleUploadPhotoSubmit(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-amber-800 mb-1">相片標題</label>
+                    <input type="text" id="photo-title" placeholder="例：陽明山夕陽" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block font-semibold text-amber-800 mb-1">拍攝/紀錄日期</label>
+                    <input type="date" id="photo-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block font-semibold text-amber-800 mb-1">選擇照片文件</label>
+                    <input type="file" id="photo-file" accept="image/*" required onchange="previewPhotoUpload(event)" class="w-full text-amber-700 border border-amber-200 rounded-xl p-1.5 bg-amber-50/30 text-xs">
+                    <div id="photo-preview-box" class="hidden mt-2 relative rounded-xl overflow-hidden border border-amber-200 h-40 bg-amber-50 flex items-center justify-center">
+                        <img id="photo-preview-img" class="max-h-full max-w-full object-contain" src="" alt="相片預覽">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeUploadPhotoModal()" class="px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">新增照片</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-photo-lightbox" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col justify-between p-4" onclick="closePhotoLightbox()">
+        <div class="flex justify-between items-center text-white px-2 py-1" onclick="event.stopPropagation()">
+            <div>
+                <h3 id="lightbox-title" class="font-bold text-base">相片標題</h3>
+                <p id="lightbox-date" class="text-xs text-gray-300">2026-09-25</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="lightbox-delete-btn" title="刪除此照片" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs transition">
+                    <i class="fa-regular fa-trash-can mr-1"></i>刪除相片
+                </button>
+                <button onclick="closePhotoLightbox()" class="text-white hover:text-gray-300 text-2xl px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 flex items-center justify-center p-2" onclick="event.stopPropagation()">
+            <img id="lightbox-img" class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl" src="" alt="放大照片">
+        </div>
+        <div class="text-center text-gray-400 text-xs py-2">點擊背景任意處或右上角關閉</div>
+    </div>
+
     <script>
         // Initial Mock Data
         const initialCards = [
@@ -216,10 +316,10 @@
                 topic: '晨間閱讀',
                 title: '清晨的一杯咖啡與書香',
                 date: '2026-09-25',
-                content: '今天早晨特別靜謐，給自己沖了一杯衣索比亞的手沖咖啡。微酸的花果香氣在客廳瀰漫開來。\n\n翻開剛買的書，讀到一段話特別有感觸：「生活的藝術，在於學會欣賞那些看似微不足道的瞬間。」在忙碌的工作開始前，擁有這樣一個屬於自己的半小時，真的讓人感到心靈被充飽了電。希望今天也能順順利利！',
+                image: '',
+                content: '今天早晨特別靜謐，給自己沖了一杯衣索比亞的手沖咖啡。微酸的花果香氣在客廳瀰漫開來。\n\n翻開剛買的書，讀到一段話特別有感觸：「生活的藝術，在於學會欣賞那些看似微不足道的瞬間。」在忙碌的工作開始前，擁有這樣一個屬於自己的半小時，真的讓人感到心靈被充飽了電。',
                 comments: [
-                    { id: 'c1', text: '這段話寫得真好！咖啡看起來也很誘人。', time: '09:15' },
-                    { id: 'c2', text: '早起真的需要動力，向你學習～', time: '10:02' }
+                    { id: 'c1', text: '這段話寫得真好！咖啡看起來也很誘人。', time: '09:15' }
                 ]
             },
             {
@@ -227,48 +327,79 @@
                 topic: '美味食記',
                 title: '巷弄裡的溫暖日式定食',
                 date: '2026-09-24',
-                content: '下班後和朋友無意間發現了一家藏在小巷子裡的定食店。店門口掛著暖黃色的布簾，推開門就是濃濃的柴魚高湯香味。\n\n點了招牌的唐揚雞定食，外皮香酥多汁，配上軟糯的越光米飯和溫熱的味噌湯，一整天的疲憊瞬間都被治癒了。這絕對會成為我的口袋名單！',
-                comments: [
-                    { id: 'c3', text: '求店家地址！感覺超好吃！', time: '19:30' }
-                ]
-            },
-            {
-                id: '3',
-                topic: '靈感隨筆',
-                title: '關於秋天的小小心情',
-                date: '2026-09-20',
-                content: '微風漸漸有了涼意，街上的樹葉也開始微微泛黃。秋天總是不聲不響地來到身邊，帶走夏天的躁熱，帶來一份沉靜。這個季節最適合散步、思考，還有把那些閃過腦海的靈感記錄下來。',
+                image: '',
+                content: '下班後和朋友無意間發現了一家藏在小巷子裡的定食店。店門口掛著暖黃色的布簾，推開門就是濃濃的柴魚高湯香味。招牌唐揚雞定食，外皮香酥多汁！',
                 comments: []
             }
         ];
 
-        let cards = [];
-        let activeCardId = null;
+        const initialAlbum = [];
 
-        // Initialize LocalStorage
-        function initData() {
-            const stored = localStorage.getItem('warm_notes_cards');
-            if (stored) {
-                cards = JSON.parse(stored);
-            } else {
-                cards = initialCards;
-                saveData();
-            }
-            
-            // Set today's date as default for create form
-            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
-            
+        let cards = [];
+        let album = [];
+        let activeCardId = null;
+        let activePhotoId = null;
+        let tempCardImageData = '';
+        let tempPhotoUploadData = '';
+
+        // Init App Data
+        function initApp() {
+            const storedCards = localStorage.getItem('warm_notes_cards');
+            cards = storedCards ? JSON.parse(storedCards) : initialCards;
+
+            const storedAlbum = localStorage.getItem('warm_notes_album');
+            album = storedAlbum ? JSON.parse(storedAlbum) : initialAlbum;
+
+            // Defaults
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('form-card-date').value = today;
+            document.getElementById('photo-date').value = today;
+
             renderCards();
+            renderAlbum();
         }
 
-        function saveData() {
+        function saveCards() {
             localStorage.setItem('warm_notes_cards', JSON.stringify(cards));
         }
 
-        // Render Cards Matrix
+        function saveAlbum() {
+            localStorage.setItem('warm_notes_album', JSON.stringify(album));
+        }
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            const cardsView = document.getElementById('cards-view');
+            const albumView = document.getElementById('album-view');
+            const cardsControls = document.getElementById('cards-controls');
+            const albumControls = document.getElementById('album-controls');
+            const tabCardsBtn = document.getElementById('tab-cards-btn');
+            const tabAlbumBtn = document.getElementById('tab-album-btn');
+
+            if (tab === 'cards') {
+                cardsView.classList.remove('hidden');
+                albumView.classList.add('hidden');
+                cardsControls.classList.remove('hidden');
+                albumControls.classList.add('hidden');
+
+                tabCardsBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900";
+                tabAlbumBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900";
+            } else {
+                cardsView.classList.add('hidden');
+                albumView.classList.remove('hidden');
+                cardsControls.classList.add('hidden');
+                albumControls.classList.remove('hidden');
+
+                tabAlbumBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900";
+                tabCardsBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900";
+            }
+        }
+
+        // --- CARDS MODULE ---
+
         function renderCards(filterDate = '') {
             const grid = document.getElementById('cards-grid');
-            const emptyState = document.getElementById('empty-state');
+            const emptyState = document.getElementById('cards-empty');
             grid.innerHTML = '';
 
             const filtered = filterDate 
@@ -288,82 +419,167 @@
             }
         }
 
-        // Create Card HTML Element
         function createCardElement(card) {
             const cardEl = document.createElement('div');
             cardEl.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden relative group';
             
+            let imgHTML = '';
+            if (card.image) {
+                imgHTML = `<div class="h-44 w-full overflow-hidden bg-amber-50">
+                    <img src="${card.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Card Image">
+                </div>`;
+            }
+
             cardEl.innerHTML = `
-                <div class="p-5 flex-1 flex flex-col justify-between cursor-pointer" onclick="openDetailModal('${card.id}')">
+                ${imgHTML}
+                <div class="p-4 flex-1 flex flex-col justify-between cursor-pointer" onclick="openCardDetailModal('${card.id}')">
                     <div>
-                        <!-- Header / Topic & Date -->
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-amber-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
-                                <button onclick="event.stopPropagation(); deleteCard('${card.id}')" title="刪除" class="text-amber-300 hover:text-red-500 transition p-1">
-                                    <i class="fa-regular fa-trash-can"></i>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs text-amber-500"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
+                                <button onclick="event.stopPropagation(); openEditCardModal('${card.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 p-1">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteCard('${card.id}')" title="刪除" class="text-amber-300 hover:text-red-500 p-1">
+                                    <i class="fa-regular fa-trash-can text-xs"></i>
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Title -->
-                        <h3 class="text-lg font-bold text-amber-900 mb-2 hover:text-amber-600 transition">${escapeHtml(card.title)}</h3>
-                        
-                        <!-- Content snippet -->
-                        <p class="text-xs text-amber-800/80 leading-relaxed line-clamp-custom mb-3 whitespace-pre-wrap">${escapeHtml(card.content)}</p>
+                        <h3 class="text-base font-bold text-amber-900 mb-1 hover:text-amber-600 transition">${escapeHtml(card.title)}</h3>
+                        <p class="text-xs text-amber-800/80 leading-relaxed line-clamp-custom mb-2 whitespace-pre-wrap">${escapeHtml(card.content)}</p>
                     </div>
-                    
-                    <div class="text-xs text-amber-500 font-medium flex items-center justify-end gap-1 pt-2 border-t border-amber-50">
-                        <span>閱讀全文與留言</span>
-                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <div class="text-[11px] text-amber-500 font-medium flex items-center justify-end gap-1 pt-2 border-t border-amber-50">
+                        <span>看全文與留言</span>
+                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
                     </div>
                 </div>
 
-                <!-- Card Footer / Direct Comment Row -->
-                <div class="bg-amber-50/50 px-5 py-3 border-t border-amber-100/60 flex flex-col gap-2">
+                <div class="bg-amber-50/50 px-4 py-2.5 border-t border-amber-100/60 flex flex-col gap-2">
                     <div class="flex items-center justify-between text-xs text-amber-700">
-                        <span class="font-medium"><i class="fa-regular fa-comment mr-1"></i>${card.comments.length} 條留言</span>
+                        <span class="font-medium text-[11px]"><i class="fa-regular fa-comment mr-1"></i>${card.comments.length} 條留言</span>
                     </div>
-
-                    <!-- Compact Input -->
                     <div class="flex gap-2" onclick="event.stopPropagation()">
-                        <input type="text" id="input-comment-${card.id}" placeholder="快速留言..." class="flex-1 bg-white border border-amber-200 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
-                        <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-lg text-xs transition">送出</button>
+                        <input type="text" id="input-comment-${card.id}" placeholder="快速留言..." class="flex-1 bg-white border border-amber-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
+                        <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg text-xs transition">送出</button>
                     </div>
                 </div>
             `;
             return cardEl;
         }
 
-        // Add Quick Comment from Card
-        function addQuickComment(cardId) {
-            const input = document.getElementById(`input-comment-${cardId}`);
-            const text = input.value.trim();
-            if (!text) return;
-
-            const card = cards.find(c => c.id === cardId);
-            if (card) {
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                card.comments.push({ id: Date.now().toString(), text: text, time: timeStr });
-                saveData();
-                renderCards(document.getElementById('filter-date').value);
+        // Image Base64 Converter Helper
+        function previewCardImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempCardImageData = evt.target.result;
+                    document.getElementById('card-image-preview').src = tempCardImageData;
+                    document.getElementById('card-image-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        // Delete Card
+        function removeCardImagePreview() {
+            tempCardImageData = '';
+            document.getElementById('form-card-image').value = '';
+            document.getElementById('card-image-preview').src = '';
+            document.getElementById('card-image-preview-container').classList.add('hidden');
+        }
+
+        // Create / Edit Card Modal
+        function openCreateCardModal() {
+            document.getElementById('card-edit-id').value = '';
+            document.getElementById('card-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增主題卡片`;
+            document.getElementById('card-form').reset();
+            removeCardImagePreview();
+            document.getElementById('form-card-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-card-form').classList.remove('hidden');
+        }
+
+        function openEditCardModal(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            document.getElementById('card-edit-id').value = card.id;
+            document.getElementById('card-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 編輯主題卡片`;
+            document.getElementById('form-card-topic').value = card.topic;
+            document.getElementById('form-card-date').value = card.date;
+            document.getElementById('form-card-title').value = card.title;
+            document.getElementById('form-card-content').value = card.content;
+
+            if (card.image) {
+                tempCardImageData = card.image;
+                document.getElementById('card-image-preview').src = card.image;
+                document.getElementById('card-image-preview-container').classList.remove('hidden');
+            } else {
+                removeCardImagePreview();
+            }
+
+            document.getElementById('modal-card-form').classList.remove('hidden');
+        }
+
+        function closeCardFormModal() {
+            document.getElementById('modal-card-form').classList.add('hidden');
+        }
+
+        function handleCardFormSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('card-edit-id').value;
+            const topic = document.getElementById('form-card-topic').value.trim();
+            const date = document.getElementById('form-card-date').value;
+            const title = document.getElementById('form-card-title').value.trim();
+            const content = document.getElementById('form-card-content').value.trim();
+
+            if (!topic || !date || !title || !content) return;
+
+            if (editId) {
+                // Update existing card
+                const card = cards.find(c => c.id === editId);
+                if (card) {
+                    card.topic = topic;
+                    card.date = date;
+                    card.title = title;
+                    card.content = content;
+                    card.image = tempCardImageData;
+                }
+            } else {
+                // Add new card
+                const newCard = {
+                    id: Date.now().toString(),
+                    topic,
+                    date,
+                    title,
+                    content,
+                    image: tempCardImageData,
+                    comments: []
+                };
+                cards.unshift(newCard);
+            }
+
+            saveCards();
+            closeCardFormModal();
+            renderCards(document.getElementById('filter-date').value);
+
+            // If detail modal was open, refresh or close it
+            if (activeCardId === editId) {
+                openCardDetailModal(editId);
+            }
+        }
+
         function deleteCard(cardId) {
             if (confirm('確定要刪除這張卡片嗎？此動作無法復原。')) {
                 cards = cards.filter(c => c.id !== cardId);
-                saveData();
+                saveCards();
                 renderCards(document.getElementById('filter-date').value);
-                closeDetailModal();
+                closeCardDetailModal();
             }
         }
 
-        // Open Detail Modal
-        function openDetailModal(cardId) {
+        // Card Detail & Comment Actions
+        function openCardDetailModal(cardId) {
             const card = cards.find(c => c.id === cardId);
             if (!card) return;
 
@@ -372,22 +588,31 @@
             document.getElementById('detail-date').innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${card.date}`;
             document.getElementById('detail-title').innerText = card.title;
             document.getElementById('detail-content').innerText = card.content;
-            
-            // Delete Action in Modal
+
+            const imgBox = document.getElementById('detail-image-box');
+            const imgEl = document.getElementById('detail-image');
+            if (card.image) {
+                imgEl.src = card.image;
+                imgBox.classList.remove('hidden');
+            } else {
+                imgBox.classList.add('hidden');
+            }
+
+            document.getElementById('detail-edit-btn').onclick = () => {
+                closeCardDetailModal();
+                openEditCardModal(cardId);
+            };
             document.getElementById('detail-delete-btn').onclick = () => deleteCard(cardId);
 
             renderDetailComments();
-
-            const modal = document.getElementById('modal-detail');
-            modal.classList.remove('hidden');
+            document.getElementById('modal-card-detail').classList.remove('hidden');
         }
 
-        function closeDetailModal() {
-            document.getElementById('modal-detail').classList.add('hidden');
+        function closeCardDetailModal() {
+            document.getElementById('modal-card-detail').classList.add('hidden');
             activeCardId = null;
         }
 
-        // Render Detail Modal Comments
         function renderDetailComments() {
             if (!activeCardId) return;
             const card = cards.find(c => c.id === activeCardId);
@@ -398,13 +623,13 @@
             list.innerHTML = '';
 
             if (card.comments.length === 0) {
-                list.innerHTML = `<p class="text-xs text-amber-500 italic py-2">目前沒有留言，來發表第一條留言吧！</p>`;
+                list.innerHTML = `<p class="text-xs text-amber-500 italic py-2">目前沒有留言，歡迎發表第一條留言！</p>`;
                 return;
             }
 
             card.comments.forEach(c => {
                 const item = document.createElement('div');
-                item.className = 'bg-amber-50/70 p-3 rounded-xl border border-amber-100/80 text-xs text-amber-900 flex justify-between items-start gap-2';
+                item.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100/80 text-xs text-amber-900 flex justify-between items-start gap-2';
                 item.innerHTML = `
                     <div class="flex-1">
                         <p class="leading-relaxed text-amber-800">${escapeHtml(c.text)}</p>
@@ -415,7 +640,21 @@
             });
         }
 
-        // Add Comment from Detail Modal
+        function addQuickComment(cardId) {
+            const input = document.getElementById(`input-comment-${cardId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                card.comments.push({ id: Date.now().toString(), text, time: timeStr });
+                saveCards();
+                renderCards(document.getElementById('filter-date').value);
+            }
+        }
+
         function addCommentFromDetail() {
             if (!activeCardId) return;
             const input = document.getElementById('detail-comment-input');
@@ -426,53 +665,11 @@
             if (card) {
                 const now = new Date();
                 const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                card.comments.push({ id: Date.now().toString(), text: text, time: timeStr });
-                saveData();
+                card.comments.push({ id: Date.now().toString(), text, time: timeStr });
+                saveCards();
                 input.value = '';
                 renderDetailComments();
                 renderCards(document.getElementById('filter-date').value);
-            }
-        }
-
-        // Create Modal Controls
-        function openCreateModal() {
-            document.getElementById('modal-create').classList.remove('hidden');
-        }
-
-        function closeCreateModal() {
-            document.getElementById('modal-create').classList.add('hidden');
-            document.getElementById('create-card-form').reset();
-            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
-        }
-
-        function handleCreateCard(e) {
-            e.preventDefault();
-            const topic = document.getElementById('card-topic').value.trim();
-            const title = document.getElementById('card-title').value.trim();
-            const date = document.getElementById('card-date').value;
-            const content = document.getElementById('card-content').value.trim();
-
-            if (!topic || !title || !date || !content) return;
-
-            const newCard = {
-                id: Date.now().toString(),
-                topic,
-                title,
-                date,
-                content,
-                comments: []
-            };
-
-            cards.unshift(newCard);
-            saveData();
-            closeCreateModal();
-            
-            // If filter is active, adjust to show new card
-            const filterInput = document.getElementById('filter-date');
-            if (filterInput.value && filterInput.value !== date) {
-                resetFilter();
-            } else {
-                renderCards(filterInput.value);
             }
         }
 
@@ -501,7 +698,114 @@
 
         document.getElementById('clear-filter').addEventListener('click', resetFilter);
 
-        // Utility Function to Prevent XSS
+        // --- ALBUM MODULE ---
+
+        function renderAlbum() {
+            const grid = document.getElementById('album-grid');
+            const emptyState = document.getElementById('album-empty');
+            const countLabel = document.getElementById('album-count');
+
+            grid.innerHTML = '';
+            countLabel.innerText = `共 ${album.length} 張相片`;
+
+            if (album.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                album.forEach(photo => {
+                    const el = document.createElement('div');
+                    el.className = 'group relative aspect-square rounded-2xl overflow-hidden border border-amber-100 shadow-sm cursor-pointer bg-amber-50';
+                    el.onclick = () => openPhotoLightbox(photo.id);
+
+                    el.innerHTML = `
+                        <img src="${photo.src}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="${escapeHtml(photo.title)}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-3 text-white">
+                            <h4 class="font-bold text-xs truncate">${escapeHtml(photo.title)}</h4>
+                            <p class="text-[10px] text-gray-300">${photo.date}</p>
+                        </div>
+                    `;
+                    grid.appendChild(el);
+                });
+            }
+        }
+
+        function openUploadPhotoModal() {
+            document.getElementById('album-upload-form').reset();
+            tempPhotoUploadData = '';
+            document.getElementById('photo-preview-box').classList.add('hidden');
+            document.getElementById('photo-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-album-upload').classList.remove('hidden');
+        }
+
+        function closeUploadPhotoModal() {
+            document.getElementById('modal-album-upload').classList.add('hidden');
+        }
+
+        function previewPhotoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempPhotoUploadData = evt.target.result;
+                    document.getElementById('photo-preview-img').src = tempPhotoUploadData;
+                    document.getElementById('photo-preview-box').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleUploadPhotoSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('photo-title').value.trim();
+            const date = document.getElementById('photo-date').value;
+
+            if (!title || !date || !tempPhotoUploadData) return;
+
+            const newPhoto = {
+                id: Date.now().toString(),
+                title,
+                date,
+                src: tempPhotoUploadData
+            };
+
+            album.unshift(newPhoto);
+            saveAlbum();
+            closeUploadPhotoModal();
+            renderAlbum();
+        }
+
+        // Lightbox
+        function openPhotoLightbox(photoId) {
+            const photo = album.find(p => p.id === photoId);
+            if (!photo) return;
+
+            activePhotoId = photoId;
+            document.getElementById('lightbox-title').innerText = photo.title;
+            document.getElementById('lightbox-date').innerText = photo.date;
+            document.getElementById('lightbox-img').src = photo.src;
+            document.getElementById('lightbox-delete-btn').onclick = () => deletePhoto(photoId);
+
+            document.getElementById('modal-photo-lightbox').classList.remove('hidden');
+        }
+
+        function closePhotoLightbox() {
+            document.getElementById('modal-photo-lightbox').classList.add('hidden');
+            activePhotoId = null;
+        }
+
+        function deletePhoto(photoId) {
+            if (confirm('確定要從相簿中刪除這張照片嗎？')) {
+                album = album.filter(p => p.id !== photoId);
+                saveAlbum();
+                renderAlbum();
+                closePhotoLightbox();
+            }
+        }
+
+        // Helper
         function escapeHtml(str) {
             return str
                 .replace(/&/g, "&amp;")
@@ -511,8 +815,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Run on Page Load
-        window.addEventListener('DOMContentLoaded', initData);
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
