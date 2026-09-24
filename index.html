@@ -3,22 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>溫暖手記 | Card Wall</title>
+    <title>暖心日誌 - Warm Notes</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 圖標庫 -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font (Inter & Noto Sans TC) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        warm: {
+                        amber: {
                             50: '#fffbeb',
                             100: '#fef3c7',
                             200: '#fde68a',
@@ -30,13 +27,8 @@
                             800: '#92400e',
                             900: '#78350f',
                         },
-                        cream: {
-                            50: '#fffdfa',
-                            100: '#fdfbf7',
-                            200: '#f7f3eb',
-                            300: '#efe8da',
-                            400: '#e2d5c1',
-                        }
+                        warmBg: '#fbf7f4',
+                        warmCard: '#ffffff',
                     },
                     fontFamily: {
                         sans: ['Noto Sans TC', 'sans-serif'],
@@ -47,357 +39,469 @@
     </script>
     <style>
         body {
-            background-color: #fdfbf7;
-            color: #4a3b32;
-            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fbf7f4;
+            background-image: radial-gradient(#e5d7ce 0.75px, transparent 0.75px);
+            background-size: 16px 16px;
         }
-        /* 自訂滾動條 */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .line-clamp-custom {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        ::-webkit-scrollbar-track {
-            background: #f7f3eb;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #e2d5c1;
-            border-radius: 4px;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #d97706;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #fcd34d;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #f59e0b;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-warm-200">
+<body class="font-sans text-amber-900 min-h-screen flex flex-col justify-between">
 
-    <!-- 頂部導覽列 -->
-    <header class="sticky top-0 z-30 bg-cream-100/90 backdrop-blur-md border-b border-warm-200/60 shadow-sm transition-all duration-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-amber-50/90 backdrop-blur-md border-b border-amber-200/60 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-warm-500 to-warm-300 flex items-center justify-center text-white shadow-md shadow-warm-500/20">
-                    <i class="fa-solid fa-note-sticky text-xl"></i>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid font-bold text-lg fa-book-open"></i>
                 </div>
-                <h1 class="text-xl font-bold tracking-wide text-warm-900">暖心日誌 <span class="text-xs font-normal text-warm-600 bg-warm-100 px-2 py-0.5 rounded-full border border-warm-200">Warm Card</span></h1>
+                <div>
+                    <h1 class="text-xl font-bold text-amber-900 tracking-wide">暖心日誌</h1>
+                    <p class="text-xs text-amber-600">紀錄生活中的美好片段</p>
+                </div>
             </div>
 
-            <button id="openModalBtn" class="bg-warm-600 hover:bg-warm-700 active:scale-95 text-white font-medium px-4 py-2 rounded-xl shadow-md shadow-warm-600/20 flex items-center gap-2 transition-all">
-                <i class="fa-solid fa-plus text-sm"></i>
-                <span class="hidden sm:inline">新增卡片</span>
-            </button>
+            <!-- Controls: Filter & Add Button -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="relative flex-1 sm:flex-initial">
+                    <input type="date" id="filter-date" class="w-full sm:w-auto bg-white border border-amber-200 rounded-xl px-3 py-2 text-sm text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm transition">
+                </div>
+                <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-2 rounded-xl text-sm transition">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <button onclick="openCreateModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-plus"></i> 新建卡片
+                </button>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-        <!-- 控制與篩選面板 -->
-        <section class="bg-white/80 backdrop-blur border border-warm-200/80 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
-            <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-                <!-- 日期選擇與篩選 -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center gap-2 bg-cream-200/60 border border-warm-200 px-3 py-2 rounded-xl text-warm-800 text-sm">
-                        <i class="fa-regular fa-calendar-days text-warm-600"></i>
-                        <span class="font-medium">篩選日期:</span>
-                        <input type="date" id="filterDate" class="bg-transparent focus:outline-none text-warm-900 font-medium cursor-pointer">
-                    </div>
-                    <button id="clearDateBtn" class="text-xs text-warm-700 hover:text-warm-900 underline underline-offset-4 hidden">
-                        清除日期篩選
-                    </button>
-                </div>
+    <!-- Main Content Grid -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+        <!-- Date Info Bar -->
+        <div id="filter-info" class="hidden mb-6 bg-amber-100/70 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex justify-between items-center">
+            <span>顯示日期：<strong id="filter-date-display"></strong> 的卡片</span>
+            <button onclick="resetFilter()" class="text-amber-600 hover:text-amber-900 font-medium underline text-xs">顯示全部</button>
+        </div>
 
-                <!-- 分類標籤篩選 -->
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none" id="topicFilterContainer">
-                    <button class="topic-filter-btn active-filter bg-warm-600 text-white px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all" data-topic="ALL">
-                        全部主題
-                    </button>
-                    <!-- 動態載入主題標籤 -->
-                </div>
+        <!-- Cards Container -->
+        <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Cards inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
+            <div class="w-20 h-20 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-3xl mb-4">
+                <i class="fa-regular fa-folder-open"></i>
             </div>
-        </section>
-
-        <!-- 卡片網格區 -->
-        <section id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- 卡片會由 JavaScript 動態生成 -->
-        </section>
-
-        <!-- 無資料顯示狀態 -->
-        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
-            <div class="w-20 h-20 bg-warm-100 rounded-full flex items-center justify-center mb-4 text-warm-400">
-                <i class="fa-regular fa-folder-open text-3xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-warm-900 mb-1">找不到相關卡片</h3>
-            <p class="text-sm text-warm-600 mb-4">嘗試調整日期或選擇其他主題標籤</p>
-            <button id="resetFiltersBtn" class="text-xs bg-warm-200 hover:bg-warm-300 text-warm-800 px-4 py-2 rounded-xl transition-all">
-                重置所有篩選
-            </button>
+            <h3 class="text-lg font-medium text-amber-800 mb-1">尚無相關卡片</h3>
+            <p class="text-sm text-amber-600 mb-4">開始記錄今天的心情或選擇其他日期吧！</p>
+            <button onclick="openCreateModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm transition">新增卡片</button>
         </div>
     </main>
 
-    <!-- 頁腳 -->
-    <footer class="bg-cream-200/50 border-t border-warm-200/60 py-6 text-center text-sm text-warm-600 mt-12">
-        <p>© 2026 溫暖手記 Warm Cards Wall. All rights reserved.</p>
+    <!-- Footer -->
+    <footer class="mt-12 py-6 text-center text-xs text-amber-600/80 border-t border-amber-200/40">
+        <p>© Warm Notes 日誌卡片網頁 · 暖心紀錄每一天</p>
     </footer>
 
-    <!-- 新增卡片 Modal 彈窗 -->
-    <div id="cardModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-warm-100 transform scale-95 transition-transform duration-300" id="modalContent">
-            <div class="flex justify-between items-center mb-6 border-b border-warm-100 pb-4">
-                <h2 class="text-xl font-bold text-warm-900 flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-warm-500"></i>
-                    寫下新卡片
-                </h2>
-                <button id="closeModalBtn" class="text-warm-400 hover:text-warm-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-cream-200 transition-all">
+    <!-- Modal: Create New Card -->
+    <div id="modal-create" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden transform transition-all">
+            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
+                <h3 class="font-bold text-amber-900 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增主題卡片
+                </h3>
+                <button onclick="closeCreateModal()" class="text-amber-400 hover:text-amber-700 transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
-            <form id="cardForm" class="space-y-4">
+            <form id="create-card-form" onsubmit="handleCreateCard(event)" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-warm-800 mb-1">標題</label>
-                    <input type="text" id="cardTitle" required placeholder="給這張卡片取個名字..." class="w-full px-4 py-2.5 rounded-xl border border-warm-200 focus:outline-none focus:ring-2 focus:ring-warm-500/50 focus:border-warm-500 text-warm-900 placeholder-warm-300 bg-cream-50">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">主題 (Topic)</label>
+                    <input type="text" id="card-topic" placeholder="例如：飲食日記、心得體會、旅遊..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-warm-800 mb-1">主題類別</label>
-                        <select id="cardTopic" class="w-full px-3 py-2.5 rounded-xl border border-warm-200 focus:outline-none focus:ring-2 focus:ring-warm-500/50 focus:border-warm-500 text-warm-900 bg-cream-50">
-                            <option value="日常">日常</option>
-                            <option value="工作">工作</option>
-                            <option value="靈感">靈感</option>
-                            <option value="美食">美食</option>
-                            <option value="旅行">旅行</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-warm-800 mb-1">選擇日期</label>
-                        <input type="date" id="cardDate" required class="w-full px-3 py-2.5 rounded-xl border border-warm-200 focus:outline-none focus:ring-2 focus:ring-warm-500/50 focus:border-warm-500 text-warm-900 bg-cream-50">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-sm font-medium text-warm-800 mb-1">卡片內容</label>
-                    <textarea id="cardContent" rows="4" required placeholder="寫下值得紀錄的精彩內容..." class="w-full px-4 py-2.5 rounded-xl border border-warm-200 focus:outline-none focus:ring-2 focus:ring-warm-500/50 focus:border-warm-500 text-warm-900 placeholder-warm-300 bg-cream-50 resize-none"></textarea>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">標題 (Title)</label>
+                    <input type="text" id="card-title" placeholder="請輸入標題" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
                 </div>
-
-                <div class="pt-4 flex justify-end gap-3">
-                    <button type="button" id="cancelModalBtn" class="px-5 py-2.5 rounded-xl text-warm-700 bg-cream-200 hover:bg-cream-300 font-medium transition-all">
-                        取消
-                    </button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl text-white bg-warm-600 hover:bg-warm-700 font-medium shadow-md shadow-warm-600/20 transition-all">
-                        發布卡片
-                    </button>
+                <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">日期 (Date)</label>
+                    <input type="date" id="card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">內容 (Content)</label>
+                    <textarea id="card-content" rows="5" placeholder="寫下任何你想紀錄的文字..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-xl text-sm text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-sm text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">發布卡片</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal: Card Full Detail & Comments -->
+    <div id="modal-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
+            <!-- Detail Header -->
+            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span id="detail-topic" class="text-xs px-2.5 py-1 rounded-md bg-amber-200 text-amber-800 font-medium">主題</span>
+                    <span id="detail-date" class="text-xs text-amber-600"><i class="fa-regular fa-calendar mr-1"></i>2026-09-25</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="detail-delete-btn" title="刪除卡片" class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                    <button onclick="closeDetailModal()" class="text-amber-400 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-100 transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detail Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                <div>
+                    <h2 id="detail-title" class="text-2xl font-bold text-amber-900 mb-3">卡片標題</h2>
+                    <p id="detail-content" class="text-amber-800 leading-relaxed whitespace-pre-wrap text-base border-b border-amber-100 pb-6">完整內容...</p>
+                </div>
+
+                <!-- Detail Comments Section -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+                        <i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)
+                    </h4>
+                    
+                    <!-- Comment Input -->
+                    <div class="flex gap-2">
+                        <input type="text" id="detail-comment-input" placeholder="撰寫公開留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm whitespace-nowrap">送出</button>
+                    </div>
+
+                    <!-- Comment List -->
+                    <div id="detail-comments-list" class="space-y-2 pt-2">
+                        <!-- Comments inserted dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
     <script>
-        // 預設示範資料
-        const defaultCards = [
+        // Initial Mock Data
+        const initialCards = [
             {
                 id: '1',
-                title: '陽光燦爛的下午茶時間',
-                topic: '美食',
-                date: '2026-09-20',
-                content: '今天造訪了一家充滿木質調與肉桂香氣的古董咖啡廳，手沖咖啡的香氣搭配現烘鬆餅，讓人忘卻一整週的忙碌。特別喜歡窗邊位置灑進來的金黃色陽光。',
+                topic: '晨間閱讀',
+                title: '清晨的一杯咖啡與書香',
+                date: '2026-09-25',
+                content: '今天早晨特別靜謐，給自己沖了一杯衣索比亞的手沖咖啡。微酸的花果香氣在客廳瀰漫開來。\n\n翻開剛買的書，讀到一段話特別有感觸：「生活的藝術，在於學會欣賞那些看似微不足道的瞬間。」在忙碌的工作開始前，擁有這樣一個屬於自己的半小時，真的讓人感到心靈被充飽了電。希望今天也能順順利利！',
                 comments: [
-                    { id: 'c1', author: '小明', text: '這家在哪裡！求推薦～', date: '2026-09-20 15:30' },
-                    { id: 'c2', author: 'Author', text: '在市區巷弄裡，叫做「暖時咖啡館」！', date: '2026-09-20 16:05' }
+                    { id: 'c1', text: '這段話寫得真好！咖啡看起來也很誘人。', time: '09:15' },
+                    { id: 'c2', text: '早起真的需要動力，向你學習～', time: '10:02' }
                 ]
             },
             {
                 id: '2',
-                title: '閱讀《晨間習慣》的感悟',
-                topic: '靈感',
-                date: '2026-09-22',
-                content: '「早晨的頭一個小時，決定了你一整天的心境。」試著提早30分鐘起床，不碰手機，寫寫字、喝杯暖水，發現心境真的平靜很多！',
+                topic: '美味食記',
+                title: '巷弄裡的溫暖日式定食',
+                date: '2026-09-24',
+                content: '下班後和朋友無意間發現了一家藏在小巷子裡的定食店。店門口掛著暖黃色的布簾，推開門就是濃濃的柴魚高湯香味。\n\n點了招牌的唐揚雞定食，外皮香酥多汁，配上軟糯的越光米飯和溫熱的味噌湯，一整天的疲憊瞬間都被治癒了。這絕對會成為我的口袋名單！',
                 comments: [
-                    { id: 'c3', author: 'Eva', text: '真的！早起無手機時刻超棒！', date: '2026-09-22 09:12' }
+                    { id: 'c3', text: '求店家地址！感覺超好吃！', time: '19:30' }
                 ]
             },
             {
                 id: '3',
-                title: '完成全新專案架構規劃',
-                topic: '工作',
-                date: '2026-09-24',
-                content: '經過幾天的腦力激盪，終於把產品的新介面設計邏輯整理完畢。使用溫暖顏色當作基調，希望給使用者更多親切感與沉浸體驗。',
+                topic: '靈感隨筆',
+                title: '關於秋天的小小心情',
+                date: '2026-09-20',
+                content: '微風漸漸有了涼意，街上的樹葉也開始微微泛黃。秋天總是不聲不響地來到身邊，帶走夏天的躁熱，帶來一份沉靜。這個季節最適合散步、思考，還有把那些閃過腦海的靈感記錄下來。',
                 comments: []
             }
         ];
 
-        // 狀態管理
-        let cards = JSON.parse(localStorage.getItem('warm_cards_data')) || defaultCards;
-        let selectedTopic = 'ALL';
-        let selectedDate = '';
+        let cards = [];
+        let activeCardId = null;
 
-        // DOM 元素引用
-        const cardGrid = document.getElementById('cardGrid');
-        const emptyState = document.getElementById('emptyState');
-        const cardModal = document.getElementById('cardModal');
-        const modalContent = document.getElementById('modalContent');
-        const cardForm = document.getElementById('cardForm');
-        const openModalBtn = document.getElementById('openModalBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelModalBtn = document.getElementById('cancelModalBtn');
-        const filterDateInput = document.getElementById('filterDate');
-        const clearDateBtn = document.getElementById('clearDateBtn');
-        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-        const topicFilterContainer = document.getElementById('topicFilterContainer');
-
-        // 主題標籤顏色對應
-        const topicBadgeStyles = {
-            '日常': 'bg-amber-100 text-amber-800 border-amber-200',
-            '工作': 'bg-stone-200 text-stone-800 border-stone-300',
-            '靈感': 'bg-orange-100 text-orange-800 border-orange-200',
-            '美食': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            '旅行': 'bg-emerald-100 text-emerald-800 border-emerald-200'
-        };
-
-        // 初始化應用程式
-        function initApp() {
-            // 設定 Modal 預設日期為今天
-            document.getElementById('cardDate').valueToDate = new Date();
-            document.getElementById('cardDate').value = new Date().toISOString().split('T')[0];
-
-            renderTopicFilters();
+        // Initialize LocalStorage
+        function initData() {
+            const stored = localStorage.getItem('warm_notes_cards');
+            if (stored) {
+                cards = JSON.parse(stored);
+            } else {
+                cards = initialCards;
+                saveData();
+            }
+            
+            // Set today's date as default for create form
+            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
+            
             renderCards();
-            setupEventListeners();
         }
 
-        // 保存資料到 LocalStorage
         function saveData() {
-            localStorage.setItem('warm_cards_data', JSON.stringify(cards));
+            localStorage.setItem('warm_notes_cards', JSON.stringify(cards));
         }
 
-        // 渲染主題篩選按鈕
-        function renderTopicFilters() {
-            const topics = ['ALL', '日常', '工作', '靈感', '美食', '旅行'];
-            topicFilterContainer.innerHTML = topics.map(t => {
-                const isActive = t === selectedTopic;
-                const activeClass = isActive 
-                    ? 'bg-warm-600 text-white shadow-sm' 
-                    : 'bg-cream-200/80 hover:bg-cream-300 text-warm-800';
-                const label = t === 'ALL' ? '全部主題' : t;
-                return `<button class="topic-filter-btn whitespace-nowrap px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all ${activeClass}" data-topic="${t}">${label}</button>`;
-            }).join('');
-        }
+        // Render Cards Matrix
+        function renderCards(filterDate = '') {
+            const grid = document.getElementById('cards-grid');
+            const emptyState = document.getElementById('empty-state');
+            grid.innerHTML = '';
 
-        // 渲染卡片清單
-        function renderCards() {
-            // 篩選邏輯
-            const filteredCards = cards.filter(card => {
-                const matchTopic = selectedTopic === 'ALL' || card.topic === selectedTopic;
-                const matchDate = !selectedDate || card.date === selectedDate;
-                return matchTopic && matchDate;
-            });
+            const filtered = filterDate 
+                ? cards.filter(card => card.date === filterDate)
+                : cards;
 
-            // 檢查是否沒有資料
-            if (filteredCards.length === 0) {
-                cardGrid.innerHTML = '';
+            if (filtered.length === 0) {
                 emptyState.classList.remove('hidden');
                 emptyState.classList.add('flex');
-                return;
             } else {
                 emptyState.classList.add('hidden');
                 emptyState.classList.remove('flex');
-            }
-
-            // 生成卡片 HTML
-            cardGrid.innerHTML = filteredCards.map(card => {
-                const badgeStyle = topicBadgeStyles[card.topic] || 'bg-warm-100 text-warm-800 border-warm-200';
                 
-                // 渲染留言清單
-                const commentsHtml = card.comments.length > 0
-                    ? card.comments.map(c => `
-                        <div class="bg-cream-100/70 p-2.5 rounded-xl text-xs space-y-1 border border-warm-100">
-                            <div class="flex justify-between items-center text-warm-600 font-medium">
-                                <span><i class="fa-regular fa-user mr-1 text-[10px]"></i>${escapeHtml(c.author)}</span>
-                                <span class="text-[10px] text-warm-400">${c.date}</span>
-                            </div>
-                            <p class="text-warm-800 leading-relaxed">${escapeHtml(c.text)}</p>
-                        </div>
-                    `).join('')
-                    : `<p class="text-xs text-warm-400 italic text-center py-2">還沒有留言，來留下第一個想法吧！</p>`;
-
-                return `
-                    <article class="bg-white rounded-2xl border border-warm-200/70 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden group">
-                        <!-- 卡片頭部與內文 -->
-                        <div class="p-5 sm:p-6 space-y-3">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-lg border ${badgeStyle}">
-                                    ${card.topic}
-                                </span>
-                                <time class="text-xs font-medium text-warm-500 flex items-center gap-1">
-                                    <i class="fa-regular fa-calendar text-warm-400"></i>
-                                    ${card.date}
-                                </time>
-                            </div>
-
-                            <h3 class="text-lg font-bold text-warm-900 group-hover:text-warm-600 transition-colors">
-                                ${escapeHtml(card.title)}
-                            </h3>
-
-                            <p class="text-sm text-warm-700 leading-relaxed whitespace-pre-line">
-                                ${escapeHtml(card.content)}
-                            </p>
-                        </div>
-
-                        <!-- 留言區塊 -->
-                        <div class="bg-cream-50/80 border-t border-warm-100 p-4 sm:p-5 space-y-3">
-                            <div class="flex items-center justify-between text-xs font-semibold text-warm-700 mb-1">
-                                <span class="flex items-center gap-1.5">
-                                    <i class="fa-regular fa-comments text-warm-500"></i>
-                                    留言 (${card.comments.length})
-                                </span>
-                            </div>
-
-                            <!-- 留言清單容器 -->
-                            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                                ${commentsHtml}
-                            </div>
-
-                            <!-- 新增留言輸入框 -->
-                            <form onsubmit="handleAddComment(event, '${card.id}')" class="mt-3 pt-2 flex flex-col gap-2">
-                                <div class="flex gap-2">
-                                    <input type="text" placeholder="您的暱稱" required class="comment-author-${card.id} w-1/3 text-xs px-2.5 py-1.5 rounded-lg border border-warm-200 focus:outline-none focus:ring-1 focus:ring-warm-500 bg-white">
-                                    <input type="text" placeholder="寫下留言..." required class="comment-text-${card.id} w-2/3 text-xs px-2.5 py-1.5 rounded-lg border border-warm-200 focus:outline-none focus:ring-1 focus:ring-warm-500 bg-white">
-                                </div>
-                                <button type="submit" class="self-end text-xs bg-warm-600 hover:bg-warm-700 active:scale-95 text-white px-3 py-1 rounded-lg font-medium transition-all shadow-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-paper-plane text-[10px]"></i> 傳送
-                                </button>
-                            </form>
-                        </div>
-                    </article>
-                `;
-            }).join('');
+                filtered.forEach(card => {
+                    grid.appendChild(createCardElement(card));
+                });
+            }
         }
 
-        // 新增留言處理
-        window.handleAddComment = function(event, cardId) {
-            event.preventDefault();
-            const authorInput = document.querySelector(`.comment-author-${cardId}`);
-            const textInput = document.querySelector(`.comment-text-${cardId}`);
+        // Create Card HTML Element
+        function createCardElement(card) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden relative group';
+            
+            cardEl.innerHTML = `
+                <div class="p-5 flex-1 flex flex-col justify-between cursor-pointer" onclick="openDetailModal('${card.id}')">
+                    <div>
+                        <!-- Header / Topic & Date -->
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-amber-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
+                                <button onclick="event.stopPropagation(); deleteCard('${card.id}')" title="刪除" class="text-amber-300 hover:text-red-500 transition p-1">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Title -->
+                        <h3 class="text-lg font-bold text-amber-900 mb-2 hover:text-amber-600 transition">${escapeHtml(card.title)}</h3>
+                        
+                        <!-- Content snippet -->
+                        <p class="text-xs text-amber-800/80 leading-relaxed line-clamp-custom mb-3 whitespace-pre-wrap">${escapeHtml(card.content)}</p>
+                    </div>
+                    
+                    <div class="text-xs text-amber-500 font-medium flex items-center justify-end gap-1 pt-2 border-t border-amber-50">
+                        <span>閱讀全文與留言</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </div>
+                </div>
 
-            const author = authorInput.value.trim();
-            const text = textInput.value.trim();
+                <!-- Card Footer / Direct Comment Row -->
+                <div class="bg-amber-50/50 px-5 py-3 border-t border-amber-100/60 flex flex-col gap-2">
+                    <div class="flex items-center justify-between text-xs text-amber-700">
+                        <span class="font-medium"><i class="fa-regular fa-comment mr-1"></i>${card.comments.length} 條留言</span>
+                    </div>
 
-            if (!author || !text) return;
+                    <!-- Compact Input -->
+                    <div class="flex gap-2" onclick="event.stopPropagation()">
+                        <input type="text" id="input-comment-${card.id}" placeholder="快速留言..." class="flex-1 bg-white border border-amber-200 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
+                        <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-lg text-xs transition">送出</button>
+                    </div>
+                </div>
+            `;
+            return cardEl;
+        }
+
+        // Add Quick Comment from Card
+        function addQuickComment(cardId) {
+            const input = document.getElementById(`input-comment-${cardId}`);
+            const text = input.value.trim();
+            if (!text) return;
 
             const card = cards.find(c => c.id === cardId);
             if (card) {
                 const now = new Date();
-                const formattedTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                
-                card.comments.push({
-                    id: 'c_' + Date.now(),
-                    author: author,
-                    text: text,
-                    date: formattedTime
-                });
-
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                card.comments.push({ id: Date.now().toString(), text: text, time: timeStr });
                 saveData();
-                renderCards();
+                renderCards(document.getElementById('filter-date').value);
             }
-        };
+        }
 
-        // 安全轉義 HTML 字符
+        // Delete Card
+        function deleteCard(cardId) {
+            if (confirm('確定要刪除這張卡片嗎？此動作無法復原。')) {
+                cards = cards.filter(c => c.id !== cardId);
+                saveData();
+                renderCards(document.getElementById('filter-date').value);
+                closeDetailModal();
+            }
+        }
+
+        // Open Detail Modal
+        function openDetailModal(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            activeCardId = cardId;
+            document.getElementById('detail-topic').innerText = card.topic;
+            document.getElementById('detail-date').innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${card.date}`;
+            document.getElementById('detail-title').innerText = card.title;
+            document.getElementById('detail-content').innerText = card.content;
+            
+            // Delete Action in Modal
+            document.getElementById('detail-delete-btn').onclick = () => deleteCard(cardId);
+
+            renderDetailComments();
+
+            const modal = document.getElementById('modal-detail');
+            modal.classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('modal-detail').classList.add('hidden');
+            activeCardId = null;
+        }
+
+        // Render Detail Modal Comments
+        function renderDetailComments() {
+            if (!activeCardId) return;
+            const card = cards.find(c => c.id === activeCardId);
+            if (!card) return;
+
+            document.getElementById('detail-comment-count').innerText = card.comments.length;
+            const list = document.getElementById('detail-comments-list');
+            list.innerHTML = '';
+
+            if (card.comments.length === 0) {
+                list.innerHTML = `<p class="text-xs text-amber-500 italic py-2">目前沒有留言，來發表第一條留言吧！</p>`;
+                return;
+            }
+
+            card.comments.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'bg-amber-50/70 p-3 rounded-xl border border-amber-100/80 text-xs text-amber-900 flex justify-between items-start gap-2';
+                item.innerHTML = `
+                    <div class="flex-1">
+                        <p class="leading-relaxed text-amber-800">${escapeHtml(c.text)}</p>
+                    </div>
+                    <span class="text-[10px] text-amber-400 whitespace-nowrap">${c.time}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Add Comment from Detail Modal
+        function addCommentFromDetail() {
+            if (!activeCardId) return;
+            const input = document.getElementById('detail-comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const card = cards.find(c => c.id === activeCardId);
+            if (card) {
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                card.comments.push({ id: Date.now().toString(), text: text, time: timeStr });
+                saveData();
+                input.value = '';
+                renderDetailComments();
+                renderCards(document.getElementById('filter-date').value);
+            }
+        }
+
+        // Create Modal Controls
+        function openCreateModal() {
+            document.getElementById('modal-create').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('modal-create').classList.add('hidden');
+            document.getElementById('create-card-form').reset();
+            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function handleCreateCard(e) {
+            e.preventDefault();
+            const topic = document.getElementById('card-topic').value.trim();
+            const title = document.getElementById('card-title').value.trim();
+            const date = document.getElementById('card-date').value;
+            const content = document.getElementById('card-content').value.trim();
+
+            if (!topic || !title || !date || !content) return;
+
+            const newCard = {
+                id: Date.now().toString(),
+                topic,
+                title,
+                date,
+                content,
+                comments: []
+            };
+
+            cards.unshift(newCard);
+            saveData();
+            closeCreateModal();
+            
+            // If filter is active, adjust to show new card
+            const filterInput = document.getElementById('filter-date');
+            if (filterInput.value && filterInput.value !== date) {
+                resetFilter();
+            } else {
+                renderCards(filterInput.value);
+            }
+        }
+
+        // Filter Logic
+        document.getElementById('filter-date').addEventListener('change', (e) => {
+            const val = e.target.value;
+            const info = document.getElementById('filter-info');
+            const clearBtn = document.getElementById('clear-filter');
+
+            if (val) {
+                info.classList.remove('hidden');
+                clearBtn.classList.remove('hidden');
+                document.getElementById('filter-date-display').innerText = val;
+                renderCards(val);
+            } else {
+                resetFilter();
+            }
+        });
+
+        function resetFilter() {
+            document.getElementById('filter-date').value = '';
+            document.getElementById('filter-info').classList.add('hidden');
+            document.getElementById('clear-filter').classList.add('hidden');
+            renderCards();
+        }
+
+        document.getElementById('clear-filter').addEventListener('click', resetFilter);
+
+        // Utility Function to Prevent XSS
         function escapeHtml(str) {
             return str
                 .replace(/&/g, "&amp;")
@@ -407,102 +511,8 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // 開啟 Modal
-        function openModal() {
-            cardModal.classList.remove('opacity-0', 'pointer-events-none');
-            modalContent.classList.remove('scale-95');
-            modalContent.classList.add('scale-100');
-        }
-
-        // 關閉 Modal
-        function closeModal() {
-            cardModal.classList.add('opacity-0', 'pointer-events-none');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            cardForm.reset();
-            // 重置日期為今天
-            document.getElementById('cardDate').value = new Date().toISOString().split('T')[0];
-        }
-
-        // 事件監聽綁定
-        function setupEventListeners() {
-            // Modal 控制
-            openModalBtn.addEventListener('click', openModal);
-            closeModalBtn.addEventListener('click', closeModal);
-            cancelModalBtn.addEventListener('click', closeModal);
-
-            // 點擊 Modal 外圍關閉
-            cardModal.addEventListener('click', (e) => {
-                if (e.target === cardModal) closeModal();
-            });
-
-            // 表單提交處理
-            cardForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const title = document.getElementById('cardTitle').value.trim();
-                const topic = document.getElementById('cardTopic').value;
-                const date = document.getElementById('cardDate').value;
-                const content = document.getElementById('cardContent').value.trim();
-
-                if (!title || !content || !date) return;
-
-                const newCard = {
-                    id: Date.now().toString(),
-                    title,
-                    topic,
-                    date,
-                    content,
-                    comments: []
-                };
-
-                cards.unshift(newCard); // 最新放置最前面
-                saveData();
-                renderCards();
-                closeModal();
-            });
-
-            // 主題標籤點擊事件 delegation
-            topicFilterContainer.addEventListener('click', (e) => {
-                const btn = e.target.closest('.topic-filter-btn');
-                if (!btn) return;
-                
-                selectedTopic = btn.dataset.topic;
-                renderTopicFilters();
-                renderCards();
-            });
-
-            // 日期篩選變更
-            filterDateInput.addEventListener('change', (e) => {
-                selectedDate = e.target.value;
-                if (selectedDate) {
-                    clearDateBtn.classList.remove('hidden');
-                } else {
-                    clearDateBtn.classList.add('hidden');
-                }
-                renderCards();
-            });
-
-            // 清除日期篩選
-            clearDateBtn.addEventListener('click', () => {
-                selectedDate = '';
-                filterDateInput.value = '';
-                clearDateBtn.classList.add('hidden');
-                renderCards();
-            });
-
-            // 重置所有篩選
-            resetFiltersBtn.addEventListener('click', () => {
-                selectedTopic = 'ALL';
-                selectedDate = '';
-                filterDateInput.value = '';
-                clearDateBtn.classList.add('hidden');
-                renderTopicFilters();
-                renderCards();
-            });
-        }
-
-        // 頁面載入完成後執行 init
-        window.onload = initApp;
+        // Run on Page Load
+        window.addEventListener('DOMContentLoaded', initData);
     </script>
 </body>
 </html>
