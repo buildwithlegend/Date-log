@@ -3,35 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暖心日誌與相簿 - Warm Notes & Album</title>
+    <title>暖心日誌 - 雲端同步版</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ==========================================
+        // 已更新為您的 Firebase 設定 (Firebase Config)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuPfNJ9pN_Yu1gjBarP-JiFEVwFhtIRrg",
+            authDomain: "dating-cb53a.firebaseapp.com",
+            projectId: "dating-cb53a",
+            storageBucket: "dating-cb53a.firebasestorage.app",
+            messagingSenderId: "516081442638",
+            appId: "1:516081442638:web:007e537498c37680d1c81f",
+            measurementId: "G-GL15X22SJS"
+        };
+
+        // 檢查是否已設定金鑰
+        const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+        let db = null;
+        if (isFirebaseConfigured) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                window.db = db;
+                window.firebaseCollections = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy };
+            } catch (e) {
+                console.error("Firebase 初始化失敗:", e);
+            }
+        }
+
+        window.isFirebaseConfigured = isFirebaseConfigured;
+    </script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         amber: {
-                            50: '#fffbeb',
-                            100: '#fef3c7',
-                            200: '#fde68a',
-                            300: '#fcd34d',
-                            400: '#fbbf24',
-                            500: '#f59e0b',
-                            600: '#d97706',
-                            700: '#b45309',
-                            800: '#92400e',
-                            900: '#78350f',
+                            50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d',
+                            400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309',
+                            800: '#92400e', 900: '#78350f',
                         },
                         warmBg: '#fbf7f4',
                     },
-                    fontFamily: {
-                        sans: ['Noto Sans TC', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Noto Sans TC', 'sans-serif'] }
                 }
             }
         }
@@ -42,45 +70,41 @@
             background-image: radial-gradient(#e5d7ce 0.75px, transparent 0.75px);
             background-size: 16px 16px;
         }
-        .line-clamp-custom {
+        .line-clamp-3-custom {
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #fcd34d;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 10px; }
     </style>
 </head>
 <body class="font-sans text-amber-900 min-h-screen flex flex-col justify-between">
 
+    <!-- Config Warning Banner (若未設定 Firebase 則提示) -->
+    <div id="config-warning" class="bg-amber-500 text-white text-xs font-medium py-2.5 px-4 text-center shadow-inner hidden">
+        <i class="fa-solid fa-triangle-exclamation mr-1.5"></i>
+        目前為「單機展示模式」。要實現多裝置（手機/電腦）跨裝置同步，請建立免費 Firebase 專案並貼入金鑰設定。
+    </div>
+
+    <!-- Header -->
     <header class="sticky top-0 z-30 bg-amber-50/90 backdrop-blur-md border-b border-amber-200/60 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-white shadow-md">
-                    <i class="fa-solid font-bold text-lg fa-book-open"></i>
+                    <i class="fa-solid fa-cloud-sun font-bold text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-amber-900 tracking-wide">暖心日誌</h1>
-                    <p class="text-xs text-amber-600">紀錄生活與照片的微醺時光</p>
+                    <p class="text-xs text-amber-600">跨裝置雲端相簿與日誌卡片</p>
                 </div>
             </div>
 
-            <!-- Tab Switcher -->
-            <div class="flex bg-amber-100/70 p-1 rounded-xl gap-1">
-                <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900">
+            <!-- View Tabs -->
+            <div class="flex bg-amber-100/70 p-1 rounded-xl border border-amber-200/80">
+                <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm">
                     <i class="fa-regular fa-clone mr-1.5"></i>卡片日誌
                 </button>
                 <button id="tab-album-btn" onclick="switchTab('album')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900">
@@ -88,642 +112,295 @@
                 </button>
             </div>
 
-            <!-- Action Controls -->
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <div id="cards-controls" class="flex items-center gap-2">
-                    <input type="date" id="filter-date" class="bg-white border border-amber-200 rounded-xl px-3 py-1.5 text-xs text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm">
-                    <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-2.5 py-1.5 rounded-xl text-xs transition">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                    </button>
-                    <button onclick="openCreateCardModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-3.5 py-1.5 rounded-xl text-xs shadow-md hover:shadow-lg transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-plus"></i> 新建卡片
-                    </button>
-                </div>
-                <div id="album-controls" class="hidden">
-                    <button onclick="openUploadPhotoModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-3.5 py-1.5 rounded-xl text-xs shadow-md hover:shadow-lg transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-upload"></i> 上傳相片
-                    </button>
-                </div>
+            <!-- Controls -->
+            <div class="flex items-center gap-2">
+                <input type="date" id="filter-date" class="bg-white border border-amber-200 rounded-xl px-2.5 py-1.5 text-xs text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm">
+                <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-2.5 py-1.5 rounded-xl text-xs transition">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button id="action-add-btn" onclick="openCreateModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-medium px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-plus"></i> <span id="add-btn-text">新增卡片</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
-        <!-- Section 1: Cards View -->
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
+        <!-- Filter Info Bar -->
+        <div id="filter-info" class="hidden mb-4 bg-amber-100/80 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-800 flex justify-between items-center">
+            <span>顯示日期：<strong id="filter-date-display"></strong></span>
+            <button onclick="resetFilter()" class="text-amber-600 hover:text-amber-900 font-medium underline">顯示全部</button>
+        </div>
+
+        <!-- Section 1: Cards Grid View -->
         <section id="cards-view" class="space-y-6">
-            <div id="filter-info" class="hidden bg-amber-100/70 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex justify-between items-center">
-                <span>顯示日期：<strong id="filter-date-display"></strong> 的日誌卡片</span>
-                <button onclick="resetFilter()" class="text-amber-600 hover:text-amber-900 font-medium underline">顯示全部</button>
-            </div>
-
-            <!-- Cards Container -->
             <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-            <!-- Cards Empty State -->
             <div id="cards-empty" class="hidden flex-col items-center justify-center py-16 text-center">
-                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3">
-                    <i class="fa-regular fa-folder-open"></i>
-                </div>
-                <h3 class="text-base font-medium text-amber-800 mb-1">尚無日誌卡片</h3>
-                <p class="text-xs text-amber-600 mb-4">開始記錄今天的心情、內容並附上照片吧！</p>
-                <button onclick="openCreateCardModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">新建卡片</button>
+                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="text-base font-medium text-amber-800 mb-1">尚無卡片</h3>
+                <p class="text-xs text-amber-600 mb-4">發布第一張溫暖的紀錄吧！</p>
+                <button onclick="openCreateModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">建立卡片</button>
             </div>
         </section>
 
-        <!-- Section 2: Photo Album View -->
+        <!-- Section 2: Album View -->
         <section id="album-view" class="hidden space-y-6">
-            <div class="flex justify-between items-center border-b border-amber-200/60 pb-3">
-                <h2 class="text-lg font-bold text-amber-900 flex items-center gap-2">
-                    <i class="fa-solid fa-camera-retro text-amber-500"></i> 回憶相簿精選
-                </h2>
-                <span id="album-count" class="text-xs text-amber-600 font-medium">共 0 張相片</span>
-            </div>
-
-            <!-- Album Grid -->
-            <div id="album-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
-
-            <!-- Album Empty State -->
+            <div id="album-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             <div id="album-empty" class="hidden flex-col items-center justify-center py-16 text-center">
-                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3">
-                    <i class="fa-regular fa-image"></i>
-                </div>
-                <h3 class="text-base font-medium text-amber-800 mb-1">相簿是空的</h3>
-                <p class="text-xs text-amber-600 mb-4">把美好的照片珍藏在這裡吧！</p>
-                <button onclick="openUploadPhotoModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">上傳相片</button>
+                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fa-regular fa-image"></i></div>
+                <h3 class="text-base font-medium text-amber-800 mb-1">相簿裡還沒有照片</h3>
+                <p class="text-xs text-amber-600 mb-4">上傳美好照片到雲端相簿吧！</p>
+                <button onclick="openAlbumUploadModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">上傳照片</button>
             </div>
         </section>
     </main>
 
-    <footer class="mt-12 py-6 text-center text-xs text-amber-600/80 border-t border-amber-200/40">
-        <p>© Warm Notes 日誌卡片與相簿網頁 · 暖心紀錄每一天</p>
+    <!-- Footer -->
+    <footer class="py-4 text-center text-xs text-amber-600/80 border-t border-amber-200/40">
+        <p>© 暖心日誌 · 跨裝置雲端同步版</p>
     </footer>
 
-    <div id="modal-card-form" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden transform transition-all">
-            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
-                <h3 id="card-form-title" class="font-bold text-amber-900 flex items-center gap-2 text-sm">
-                    <i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增主題卡片
-                </h3>
-                <button onclick="closeCardFormModal()" class="text-amber-400 hover:text-amber-700 transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+    <!-- Modal: Card Create / Edit -->
+    <div id="modal-card" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="bg-amber-50 px-5 py-3.5 border-b border-amber-100 flex justify-between items-center shrink-0">
+                <h3 id="card-modal-title" class="font-bold text-amber-900 text-sm flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增卡片</h3>
+                <button onclick="closeCardModal()" class="text-amber-400 hover:text-amber-700"><i class="fa-solid fa-xmark text-base"></i></button>
             </div>
-            <form id="card-form" onsubmit="handleCardFormSubmit(event)" class="p-6 space-y-4 text-xs">
+            <form id="card-form" onsubmit="handleSaveCard(event)" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
                 <input type="hidden" id="card-edit-id">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-amber-800 mb-1">主題 (Topic)</label>
-                        <input type="text" id="form-card-topic" placeholder="例：飲食、旅遊..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-amber-800 mb-1">日期 (Date)</label>
-                        <input type="date" id="form-card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">主題</label>
+                    <input type="text" id="card-topic" placeholder="例如：生活隨筆、美食..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">標題 (Title)</label>
-                    <input type="text" id="form-card-title" placeholder="請輸入標題" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">標題</label>
+                    <input type="text" id="card-title" placeholder="卡片標題" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">照片 (Photo - 選填)</label>
-                    <input type="file" id="form-card-image" accept="image/*" onchange="previewCardImage(event)" class="w-full text-amber-700 border border-amber-200 rounded-xl p-1.5 bg-amber-50/30 text-xs">
-                    <div id="card-image-preview-container" class="hidden mt-2 relative rounded-xl overflow-hidden border border-amber-200 h-36 bg-amber-50 flex items-center justify-center">
-                        <img id="card-image-preview" class="max-h-full max-w-full object-contain" src="" alt="預覽">
-                        <button type="button" onclick="removeCardImagePreview()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600 transition">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">日期</label>
+                    <input type="date" id="card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">相片 (可選)</label>
+                    <input type="file" id="card-image-input" accept="image/*" onchange="previewCardImage(event)" class="w-full text-xs text-amber-700 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                    <div id="card-image-preview-container" class="mt-2 relative hidden rounded-xl overflow-hidden border border-amber-200 max-h-40">
+                        <img id="card-image-preview" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeCardImage()" class="absolute top-1.5 right-1.5 bg-red-500/80 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">內容 (Content)</label>
-                    <textarea id="form-card-content" rows="4" placeholder="寫下任何你想紀錄的內容..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">內容</label>
+                    <textarea id="card-content" rows="4" placeholder="詳細文字內容..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeCardFormModal()" class="px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">儲存卡片</button>
+                    <button type="button" onclick="closeCardModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-amber-700 bg-amber-100 hover:bg-amber-200">取消</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs text-white bg-amber-500 hover:bg-amber-600 shadow font-medium">儲存卡片</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-card-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <!-- Modal: Card Full Detail -->
+    <div id="modal-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="bg-amber-50 px-6 py-3 border-b border-amber-100 flex justify-between items-center shrink-0">
+            <div class="bg-amber-50 px-5 py-3.5 border-b border-amber-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2">
-                    <span id="detail-topic" class="text-xs px-2.5 py-0.5 rounded-md bg-amber-200 text-amber-800 font-medium">主題</span>
-                    <span id="detail-date" class="text-xs text-amber-600"><i class="fa-regular fa-calendar mr-1"></i>2026-09-25</span>
+                    <span id="detail-topic" class="text-xs px-2.5 py-0.5 rounded bg-amber-200 text-amber-800 font-medium">主題</span>
+                    <span id="detail-date" class="text-xs text-amber-600">日期</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button id="detail-edit-btn" title="編輯卡片" class="text-amber-600 hover:text-amber-800 p-1.5 rounded-lg hover:bg-amber-100 transition text-xs">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button id="detail-delete-btn" title="刪除卡片" class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition text-xs">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                    <button onclick="closeCardDetailModal()" class="text-amber-400 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-100 transition text-xs">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
+                    <button id="detail-edit-btn" title="編輯" class="text-amber-600 hover:text-amber-800 p-1 rounded hover:bg-amber-100"><i class="fa-regular fa-pen-to-square"></i></button>
+                    <button id="detail-delete-btn" title="刪除" class="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50"><i class="fa-regular fa-trash-can"></i></button>
+                    <button onclick="closeDetailModal()" class="text-amber-400 hover:text-amber-700 p-1"><i class="fa-solid fa-xmark text-base"></i></button>
                 </div>
             </div>
-
-            <!-- Detail Scroll Area -->
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-                <h2 id="detail-title" class="text-xl font-bold text-amber-900">卡片標題</h2>
-                
-                <div id="detail-image-box" class="hidden rounded-xl overflow-hidden bg-amber-50 border border-amber-100 max-h-80 flex items-center justify-center">
-                    <img id="detail-image" src="" alt="圖片" class="max-h-80 w-auto object-contain">
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                <h2 id="detail-title" class="text-xl font-bold text-amber-900">標題</h2>
+                <div id="detail-image-container" class="hidden rounded-xl overflow-hidden border border-amber-100 max-h-80">
+                    <img id="detail-image" class="w-full h-full object-cover">
                 </div>
-
-                <p id="detail-content" class="text-amber-800 leading-relaxed whitespace-pre-wrap text-sm border-b border-amber-100 pb-5">卡片完整內文...</p>
-
-                <!-- Comments -->
+                <p id="detail-content" class="text-xs text-amber-800 leading-relaxed whitespace-pre-wrap border-b border-amber-100 pb-4"></p>
                 <div class="space-y-3">
-                    <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
-                        <i class="fa-regular fa-comments text-amber-500"></i> 留言交流 (<span id="detail-comment-count">0</span>)
-                    </h4>
-                    
+                    <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5"><i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)</h4>
                     <div class="flex gap-2">
-                        <input type="text" id="detail-comment-input" placeholder="撰寫留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
-                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-medium transition shadow-sm whitespace-nowrap">送出</button>
+                        <input type="text" id="detail-comment-input" placeholder="撰寫留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">送出</button>
                     </div>
-
                     <div id="detail-comments-list" class="space-y-2 pt-1"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Album Upload -->
     <div id="modal-album-upload" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-amber-100 overflow-hidden">
-            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
-                <h3 class="font-bold text-amber-900 flex items-center gap-2 text-sm">
-                    <i class="fa-solid fa-camera text-amber-500"></i> 上傳相片至相簿
-                </h3>
-                <button onclick="closeUploadPhotoModal()" class="text-amber-400 hover:text-amber-700 transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+            <div class="bg-amber-50 px-5 py-3.5 border-b border-amber-100 flex justify-between items-center">
+                <h3 class="font-bold text-amber-900 text-sm flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up text-amber-500"></i> 上傳照片至相簿</h3>
+                <button onclick="closeAlbumUploadModal()" class="text-amber-400 hover:text-amber-700"><i class="fa-solid fa-xmark text-base"></i></button>
             </div>
-            <form id="album-upload-form" onsubmit="handleUploadPhotoSubmit(event)" class="p-6 space-y-4 text-xs">
+            <form onsubmit="handleSaveAlbumPhotos(event)" class="p-5 space-y-3.5">
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">相片標題</label>
-                    <input type="text" id="photo-title" placeholder="例：陽明山夕陽" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">照片標題</label>
+                    <input type="text" id="album-title-input" placeholder="例如：花海步道" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">拍攝/紀錄日期</label>
-                    <input type="date" id="photo-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">拍攝/紀錄日期</label>
+                    <input type="date" id="album-date-input" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block font-semibold text-amber-800 mb-1">選擇照片文件</label>
-                    <input type="file" id="photo-file" accept="image/*" required onchange="previewPhotoUpload(event)" class="w-full text-amber-700 border border-amber-200 rounded-xl p-1.5 bg-amber-50/30 text-xs">
-                    <div id="photo-preview-box" class="hidden mt-2 relative rounded-xl overflow-hidden border border-amber-200 h-40 bg-amber-50 flex items-center justify-center">
-                        <img id="photo-preview-img" class="max-h-full max-w-full object-contain" src="" alt="相片預覽">
-                    </div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">選擇照片 (支援多選)</label>
+                    <input type="file" id="album-files-input" accept="image/*" multiple required class="w-full text-xs text-amber-700 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeUploadPhotoModal()" class="px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 transition">取消</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl text-white bg-amber-500 hover:bg-amber-600 shadow-md transition font-medium">新增照片</button>
+                    <button type="button" onclick="closeAlbumUploadModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-amber-700 bg-amber-100 hover:bg-amber-200">取消</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs text-white bg-amber-500 hover:bg-amber-600 font-medium shadow">開始上傳</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-photo-lightbox" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col justify-between p-4" onclick="closePhotoLightbox()">
-        <div class="flex justify-between items-center text-white px-2 py-1" onclick="event.stopPropagation()">
-            <div>
-                <h3 id="lightbox-title" class="font-bold text-base">相片標題</h3>
-                <p id="lightbox-date" class="text-xs text-gray-300">2026-09-25</p>
+    <!-- Lightbox Modal -->
+    <div id="modal-lightbox" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <img id="lightbox-img" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain">
+            <div class="text-white text-center mt-3 flex items-center gap-4">
+                <div>
+                    <p id="lightbox-title" class="font-medium text-sm"></p>
+                    <p id="lightbox-date" class="text-xs text-gray-300"></p>
+                </div>
+                <button id="lightbox-delete-btn" class="bg-red-500/80 hover:bg-red-600 text-white text-xs px-2.5 py-1 rounded-lg"><i class="fa-regular fa-trash-can mr-1"></i>刪除</button>
             </div>
-            <div class="flex items-center gap-3">
-                <button id="lightbox-delete-btn" title="刪除此照片" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs transition">
-                    <i class="fa-regular fa-trash-can mr-1"></i>刪除相片
-                </button>
-                <button onclick="closePhotoLightbox()" class="text-white hover:text-gray-300 text-2xl px-2">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white text-xl hover:text-gray-300"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="flex-1 flex items-center justify-center p-2" onclick="event.stopPropagation()">
-            <img id="lightbox-img" class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl" src="" alt="放大照片">
-        </div>
-        <div class="text-center text-gray-400 text-xs py-2">點擊背景任意處或右上角關閉</div>
     </div>
 
+    <!-- Core App Logic -->
     <script>
-        // Initial Mock Data
-        const initialCards = [
-            {
-                id: '1',
-                topic: '晨間閱讀',
-                title: '清晨的一杯咖啡與書香',
-                date: '2026-09-25',
-                image: '',
-                content: '今天早晨特別靜謐，給自己沖了一杯衣索比亞的手沖咖啡。微酸的花果香氣在客廳瀰漫開來。\n\n翻開剛買的書，讀到一段話特別有感觸：「生活的藝術，在於學會欣賞那些看似微不足道的瞬間。」在忙碌的工作開始前，擁有這樣一個屬於自己的半小時，真的讓人感到心靈被充飽了電。',
-                comments: [
-                    { id: 'c1', text: '這段話寫得真好！咖啡看起來也很誘人。', time: '09:15' }
-                ]
-            },
-            {
-                id: '2',
-                topic: '美味食記',
-                title: '巷弄裡的溫暖日式定食',
-                date: '2026-09-24',
-                image: '',
-                content: '下班後和朋友無意間發現了一家藏在小巷子裡的定食店。店門口掛著暖黃色的布簾，推開門就是濃濃的柴魚高湯香味。招牌唐揚雞定食，外皮香酥多汁！',
-                comments: []
-            }
-        ];
-
-        const initialAlbum = [];
-
         let cards = [];
-        let album = [];
+        let albumPhotos = [];
+        let currentTab = 'cards';
         let activeCardId = null;
-        let activePhotoId = null;
-        let tempCardImageData = '';
-        let tempPhotoUploadData = '';
+        let cardImageData = null;
 
-        // Init App Data
-        function initApp() {
-            const storedCards = localStorage.getItem('warm_notes_cards');
-            cards = storedCards ? JSON.parse(storedCards) : initialCards;
-
-            const storedAlbum = localStorage.getItem('warm_notes_album');
-            album = storedAlbum ? JSON.parse(storedAlbum) : initialAlbum;
-
-            // Defaults
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('form-card-date').value = today;
-            document.getElementById('photo-date').value = today;
-
-            renderCards();
-            renderAlbum();
-        }
-
-        function saveCards() {
-            localStorage.setItem('warm_notes_cards', JSON.stringify(cards));
-        }
-
-        function saveAlbum() {
-            localStorage.setItem('warm_notes_album', JSON.stringify(album));
-        }
-
-        // Tab Switching Logic
-        function switchTab(tab) {
-            const cardsView = document.getElementById('cards-view');
-            const albumView = document.getElementById('album-view');
-            const cardsControls = document.getElementById('cards-controls');
-            const albumControls = document.getElementById('album-controls');
-            const tabCardsBtn = document.getElementById('tab-cards-btn');
-            const tabAlbumBtn = document.getElementById('tab-album-btn');
-
-            if (tab === 'cards') {
-                cardsView.classList.remove('hidden');
-                albumView.classList.add('hidden');
-                cardsControls.classList.remove('hidden');
-                albumControls.classList.add('hidden');
-
-                tabCardsBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900";
-                tabAlbumBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900";
+        // --- Init Function ---
+        window.addEventListener('load', () => {
+            if (!window.isFirebaseConfigured) {
+                document.getElementById('config-warning').classList.remove('hidden');
+                loadFromLocalStorage();
             } else {
-                cardsView.classList.add('hidden');
-                albumView.classList.remove('hidden');
-                cardsControls.classList.add('hidden');
-                albumControls.classList.remove('hidden');
-
-                tabAlbumBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm bg-white text-amber-900";
-                tabCardsBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900";
+                setupFirebaseListeners();
             }
+
+            document.getElementById('album-date-input').value = new Date().toISOString().split('T')[0];
+            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
+            render();
+        });
+
+        // --- LocalStorage Fallback ---
+        function loadFromLocalStorage() {
+            cards = JSON.parse(localStorage.getItem('warm_cards') || '[]');
+            albumPhotos = JSON.parse(localStorage.getItem('warm_album') || '[]');
+            render();
         }
 
-        // --- CARDS MODULE ---
+        function saveToLocalStorage() {
+            localStorage.setItem('warm_cards', JSON.stringify(cards));
+            localStorage.setItem('warm_album', JSON.stringify(albumPhotos));
+            render();
+        }
+
+        // --- Firebase Cloud Sync ---
+        function setupFirebaseListeners() {
+            const { collection, onSnapshot, query, orderBy } = window.firebaseCollections;
+            
+            // Listen Cards Collection
+            onSnapshot(collection(window.db, "cards"), (snapshot) => {
+                cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+            });
+
+            // Listen Album Collection
+            onSnapshot(collection(window.db, "album"), (snapshot) => {
+                albumPhotos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+            });
+        }
+
+        // --- Render Views ---
+        function render() {
+            const filterDate = document.getElementById('filter-date').value;
+            if (currentTab === 'cards') renderCards(filterDate);
+            else renderAlbum(filterDate);
+        }
 
         function renderCards(filterDate = '') {
             const grid = document.getElementById('cards-grid');
-            const emptyState = document.getElementById('cards-empty');
+            const empty = document.getElementById('cards-empty');
             grid.innerHTML = '';
 
-            const filtered = filterDate 
-                ? cards.filter(card => card.date === filterDate)
-                : cards;
+            let filtered = [...cards].sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (filterDate) filtered = filtered.filter(c => c.date === filterDate);
 
             if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
+                empty.classList.remove('hidden'); empty.classList.add('flex');
             } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-                
+                empty.classList.add('hidden'); empty.classList.remove('flex');
                 filtered.forEach(card => {
-                    grid.appendChild(createCardElement(card));
+                    const el = document.createElement('div');
+                    el.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition duration-300 flex flex-col overflow-hidden group';
+                    el.innerHTML = `
+                        ${card.image ? `<div class="h-36 w-full overflow-hidden cursor-pointer" onclick="openDetailModal('${card.id}')"><img src="${card.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500"></div>` : ''}
+                        <div class="p-4 flex-1 flex flex-col justify-between cursor-pointer" onclick="openDetailModal('${card.id}')">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[10px] text-amber-500"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
+                                        <button onclick="event.stopPropagation(); openEditModal('${card.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 p-0.5"><i class="fa-regular fa-pen-to-square"></i></button>
+                                        <button onclick="event.stopPropagation(); deleteCard('${card.id}')" title="刪除" class="text-amber-300 hover:text-red-500 p-0.5"><i class="fa-regular fa-trash-can"></i></button>
+                                    </div>
+                                </div>
+                                <h3 class="text-base font-bold text-amber-900 mb-1 hover:text-amber-600 transition">${escapeHtml(card.title)}</h3>
+                                <p class="text-xs text-amber-800/80 leading-relaxed line-clamp-3-custom mb-2 whitespace-pre-wrap">${escapeHtml(card.content)}</p>
+                            </div>
+                            <div class="text-[10px] text-amber-500 font-medium text-right pt-2 border-t border-amber-50">詳情與留言 →</div>
+                        </div>
+                        <div class="bg-amber-50/50 px-4 py-2 border-t border-amber-100/60 flex items-center justify-between text-xs text-amber-700">
+                            <span class="text-[10px]"><i class="fa-regular fa-comment mr-1"></i>${(card.comments || []).length} 條留言</span>
+                            <div class="flex gap-1" onclick="event.stopPropagation()">
+                                <input type="text" id="input-quick-comment-${card.id}" placeholder="留言..." class="w-24 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-[10px]">
+                                <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px]">送出</button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(el);
                 });
             }
         }
 
-        function createCardElement(card) {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden relative group';
-            
-            let imgHTML = '';
-            if (card.image) {
-                imgHTML = `<div class="h-44 w-full overflow-hidden bg-amber-50">
-                    <img src="${card.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Card Image">
-                </div>`;
-            }
-
-            cardEl.innerHTML = `
-                ${imgHTML}
-                <div class="p-4 flex-1 flex flex-col justify-between cursor-pointer" onclick="openCardDetailModal('${card.id}')">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs text-amber-500"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
-                                <button onclick="event.stopPropagation(); openEditCardModal('${card.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 p-1">
-                                    <i class="fa-solid fa-pen text-xs"></i>
-                                </button>
-                                <button onclick="event.stopPropagation(); deleteCard('${card.id}')" title="刪除" class="text-amber-300 hover:text-red-500 p-1">
-                                    <i class="fa-regular fa-trash-can text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <h3 class="text-base font-bold text-amber-900 mb-1 hover:text-amber-600 transition">${escapeHtml(card.title)}</h3>
-                        <p class="text-xs text-amber-800/80 leading-relaxed line-clamp-custom mb-2 whitespace-pre-wrap">${escapeHtml(card.content)}</p>
-                    </div>
-                    <div class="text-[11px] text-amber-500 font-medium flex items-center justify-end gap-1 pt-2 border-t border-amber-50">
-                        <span>看全文與留言</span>
-                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                    </div>
-                </div>
-
-                <div class="bg-amber-50/50 px-4 py-2.5 border-t border-amber-100/60 flex flex-col gap-2">
-                    <div class="flex items-center justify-between text-xs text-amber-700">
-                        <span class="font-medium text-[11px]"><i class="fa-regular fa-comment mr-1"></i>${card.comments.length} 條留言</span>
-                    </div>
-                    <div class="flex gap-2" onclick="event.stopPropagation()">
-                        <input type="text" id="input-comment-${card.id}" placeholder="快速留言..." class="flex-1 bg-white border border-amber-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
-                        <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg text-xs transition">送出</button>
-                    </div>
-                </div>
-            `;
-            return cardEl;
-        }
-
-        // Image Base64 Converter Helper
-        function previewCardImage(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    tempCardImageData = evt.target.result;
-                    document.getElementById('card-image-preview').src = tempCardImageData;
-                    document.getElementById('card-image-preview-container').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function removeCardImagePreview() {
-            tempCardImageData = '';
-            document.getElementById('form-card-image').value = '';
-            document.getElementById('card-image-preview').src = '';
-            document.getElementById('card-image-preview-container').classList.add('hidden');
-        }
-
-        // Create / Edit Card Modal
-        function openCreateCardModal() {
-            document.getElementById('card-edit-id').value = '';
-            document.getElementById('card-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增主題卡片`;
-            document.getElementById('card-form').reset();
-            removeCardImagePreview();
-            document.getElementById('form-card-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-card-form').classList.remove('hidden');
-        }
-
-        function openEditCardModal(cardId) {
-            const card = cards.find(c => c.id === cardId);
-            if (!card) return;
-
-            document.getElementById('card-edit-id').value = card.id;
-            document.getElementById('card-form-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 編輯主題卡片`;
-            document.getElementById('form-card-topic').value = card.topic;
-            document.getElementById('form-card-date').value = card.date;
-            document.getElementById('form-card-title').value = card.title;
-            document.getElementById('form-card-content').value = card.content;
-
-            if (card.image) {
-                tempCardImageData = card.image;
-                document.getElementById('card-image-preview').src = card.image;
-                document.getElementById('card-image-preview-container').classList.remove('hidden');
-            } else {
-                removeCardImagePreview();
-            }
-
-            document.getElementById('modal-card-form').classList.remove('hidden');
-        }
-
-        function closeCardFormModal() {
-            document.getElementById('modal-card-form').classList.add('hidden');
-        }
-
-        function handleCardFormSubmit(e) {
-            e.preventDefault();
-            const editId = document.getElementById('card-edit-id').value;
-            const topic = document.getElementById('form-card-topic').value.trim();
-            const date = document.getElementById('form-card-date').value;
-            const title = document.getElementById('form-card-title').value.trim();
-            const content = document.getElementById('form-card-content').value.trim();
-
-            if (!topic || !date || !title || !content) return;
-
-            if (editId) {
-                // Update existing card
-                const card = cards.find(c => c.id === editId);
-                if (card) {
-                    card.topic = topic;
-                    card.date = date;
-                    card.title = title;
-                    card.content = content;
-                    card.image = tempCardImageData;
-                }
-            } else {
-                // Add new card
-                const newCard = {
-                    id: Date.now().toString(),
-                    topic,
-                    date,
-                    title,
-                    content,
-                    image: tempCardImageData,
-                    comments: []
-                };
-                cards.unshift(newCard);
-            }
-
-            saveCards();
-            closeCardFormModal();
-            renderCards(document.getElementById('filter-date').value);
-
-            // If detail modal was open, refresh or close it
-            if (activeCardId === editId) {
-                openCardDetailModal(editId);
-            }
-        }
-
-        function deleteCard(cardId) {
-            if (confirm('確定要刪除這張卡片嗎？此動作無法復原。')) {
-                cards = cards.filter(c => c.id !== cardId);
-                saveCards();
-                renderCards(document.getElementById('filter-date').value);
-                closeCardDetailModal();
-            }
-        }
-
-        // Card Detail & Comment Actions
-        function openCardDetailModal(cardId) {
-            const card = cards.find(c => c.id === cardId);
-            if (!card) return;
-
-            activeCardId = cardId;
-            document.getElementById('detail-topic').innerText = card.topic;
-            document.getElementById('detail-date').innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${card.date}`;
-            document.getElementById('detail-title').innerText = card.title;
-            document.getElementById('detail-content').innerText = card.content;
-
-            const imgBox = document.getElementById('detail-image-box');
-            const imgEl = document.getElementById('detail-image');
-            if (card.image) {
-                imgEl.src = card.image;
-                imgBox.classList.remove('hidden');
-            } else {
-                imgBox.classList.add('hidden');
-            }
-
-            document.getElementById('detail-edit-btn').onclick = () => {
-                closeCardDetailModal();
-                openEditCardModal(cardId);
-            };
-            document.getElementById('detail-delete-btn').onclick = () => deleteCard(cardId);
-
-            renderDetailComments();
-            document.getElementById('modal-card-detail').classList.remove('hidden');
-        }
-
-        function closeCardDetailModal() {
-            document.getElementById('modal-card-detail').classList.add('hidden');
-            activeCardId = null;
-        }
-
-        function renderDetailComments() {
-            if (!activeCardId) return;
-            const card = cards.find(c => c.id === activeCardId);
-            if (!card) return;
-
-            document.getElementById('detail-comment-count').innerText = card.comments.length;
-            const list = document.getElementById('detail-comments-list');
-            list.innerHTML = '';
-
-            if (card.comments.length === 0) {
-                list.innerHTML = `<p class="text-xs text-amber-500 italic py-2">目前沒有留言，歡迎發表第一條留言！</p>`;
-                return;
-            }
-
-            card.comments.forEach(c => {
-                const item = document.createElement('div');
-                item.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100/80 text-xs text-amber-900 flex justify-between items-start gap-2';
-                item.innerHTML = `
-                    <div class="flex-1">
-                        <p class="leading-relaxed text-amber-800">${escapeHtml(c.text)}</p>
-                    </div>
-                    <span class="text-[10px] text-amber-400 whitespace-nowrap">${c.time}</span>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function addQuickComment(cardId) {
-            const input = document.getElementById(`input-comment-${cardId}`);
-            const text = input.value.trim();
-            if (!text) return;
-
-            const card = cards.find(c => c.id === cardId);
-            if (card) {
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                card.comments.push({ id: Date.now().toString(), text, time: timeStr });
-                saveCards();
-                renderCards(document.getElementById('filter-date').value);
-            }
-        }
-
-        function addCommentFromDetail() {
-            if (!activeCardId) return;
-            const input = document.getElementById('detail-comment-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const card = cards.find(c => c.id === activeCardId);
-            if (card) {
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                card.comments.push({ id: Date.now().toString(), text, time: timeStr });
-                saveCards();
-                input.value = '';
-                renderDetailComments();
-                renderCards(document.getElementById('filter-date').value);
-            }
-        }
-
-        // Filter Logic
-        document.getElementById('filter-date').addEventListener('change', (e) => {
-            const val = e.target.value;
-            const info = document.getElementById('filter-info');
-            const clearBtn = document.getElementById('clear-filter');
-
-            if (val) {
-                info.classList.remove('hidden');
-                clearBtn.classList.remove('hidden');
-                document.getElementById('filter-date-display').innerText = val;
-                renderCards(val);
-            } else {
-                resetFilter();
-            }
-        });
-
-        function resetFilter() {
-            document.getElementById('filter-date').value = '';
-            document.getElementById('filter-info').classList.add('hidden');
-            document.getElementById('clear-filter').classList.add('hidden');
-            renderCards();
-        }
-
-        document.getElementById('clear-filter').addEventListener('click', resetFilter);
-
-        // --- ALBUM MODULE ---
-
-        function renderAlbum() {
+        function renderAlbum(filterDate = '') {
             const grid = document.getElementById('album-grid');
-            const emptyState = document.getElementById('album-empty');
-            const countLabel = document.getElementById('album-count');
-
+            const empty = document.getElementById('album-empty');
             grid.innerHTML = '';
-            countLabel.innerText = `共 ${album.length} 張相片`;
 
-            if (album.length === 0) {
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
+            let filtered = [...albumPhotos].sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (filterDate) filtered = filtered.filter(p => p.date === filterDate);
+
+            if (filtered.length === 0) {
+                empty.classList.remove('hidden'); empty.classList.add('flex');
             } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-
-                album.forEach(photo => {
+                empty.classList.add('hidden'); empty.classList.remove('flex');
+                filtered.forEach(photo => {
                     const el = document.createElement('div');
-                    el.className = 'group relative aspect-square rounded-2xl overflow-hidden border border-amber-100 shadow-sm cursor-pointer bg-amber-50';
-                    el.onclick = () => openPhotoLightbox(photo.id);
-
+                    el.className = 'group relative aspect-square bg-amber-100 rounded-xl overflow-hidden shadow-sm cursor-pointer border border-amber-100';
+                    el.onclick = () => openLightbox(photo);
                     el.innerHTML = `
-                        <img src="${photo.src}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="${escapeHtml(photo.title)}">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-3 text-white">
-                            <h4 class="font-bold text-xs truncate">${escapeHtml(photo.title)}</h4>
+                        <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-end text-white">
+                            <p class="text-xs font-medium truncate">${escapeHtml(photo.title || '未命名照片')}</p>
                             <p class="text-[10px] text-gray-300">${photo.date}</p>
                         </div>
                     `;
@@ -732,90 +409,304 @@
             }
         }
 
-        function openUploadPhotoModal() {
-            document.getElementById('album-upload-form').reset();
-            tempPhotoUploadData = '';
-            document.getElementById('photo-preview-box').classList.add('hidden');
-            document.getElementById('photo-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-album-upload').classList.remove('hidden');
-        }
-
-        function closeUploadPhotoModal() {
-            document.getElementById('modal-album-upload').classList.add('hidden');
-        }
-
-        function previewPhotoUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    tempPhotoUploadData = evt.target.result;
-                    document.getElementById('photo-preview-img').src = tempPhotoUploadData;
-                    document.getElementById('photo-preview-box').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function handleUploadPhotoSubmit(e) {
+        // --- Card Actions ---
+        async function handleSaveCard(e) {
             e.preventDefault();
-            const title = document.getElementById('photo-title').value.trim();
-            const date = document.getElementById('photo-date').value;
+            const editId = document.getElementById('card-edit-id').value;
+            const topic = document.getElementById('card-topic').value.trim();
+            const title = document.getElementById('card-title').value.trim();
+            const date = document.getElementById('card-date').value;
+            const content = document.getElementById('card-content').value.trim();
 
-            if (!title || !date || !tempPhotoUploadData) return;
-
-            const newPhoto = {
-                id: Date.now().toString(),
-                title,
-                date,
-                src: tempPhotoUploadData
+            const cardData = {
+                topic, title, date, content,
+                image: cardImageData || null,
+                updatedAt: new Date().toISOString()
             };
 
-            album.unshift(newPhoto);
-            saveAlbum();
-            closeUploadPhotoModal();
-            renderAlbum();
+            if (window.isFirebaseConfigured) {
+                const { collection, addDoc, doc, updateDoc } = window.firebaseCollections;
+                if (editId) {
+                    await updateDoc(doc(window.db, "cards", editId), cardData);
+                } else {
+                    cardData.comments = [];
+                    await addDoc(collection(window.db, "cards"), cardData);
+                }
+            } else {
+                if (editId) {
+                    const idx = cards.findIndex(c => c.id === editId);
+                    if (idx !== -1) cards[idx] = { ...cards[idx], ...cardData };
+                } else {
+                    cards.unshift({ id: Date.now().toString(), comments: [], ...cardData });
+                }
+                saveToLocalStorage();
+            }
+
+            closeCardModal();
         }
 
-        // Lightbox
-        function openPhotoLightbox(photoId) {
-            const photo = album.find(p => p.id === photoId);
-            if (!photo) return;
-
-            activePhotoId = photoId;
-            document.getElementById('lightbox-title').innerText = photo.title;
-            document.getElementById('lightbox-date').innerText = photo.date;
-            document.getElementById('lightbox-img').src = photo.src;
-            document.getElementById('lightbox-delete-btn').onclick = () => deletePhoto(photoId);
-
-            document.getElementById('modal-photo-lightbox').classList.remove('hidden');
+        async function deleteCard(cardId) {
+            if (!confirm('確定要刪除這張卡片嗎？')) return;
+            if (window.isFirebaseConfigured) {
+                const { doc, deleteDoc } = window.firebaseCollections;
+                await deleteDoc(doc(window.db, "cards", cardId));
+            } else {
+                cards = cards.filter(c => c.id !== cardId);
+                saveToLocalStorage();
+            }
+            closeDetailModal();
         }
 
-        function closePhotoLightbox() {
-            document.getElementById('modal-photo-lightbox').classList.add('hidden');
-            activePhotoId = null;
-        }
+        async function addQuickComment(cardId) {
+            const input = document.getElementById(`input-quick-comment-${cardId}`);
+            const text = input.value.trim();
+            if (!text) return;
 
-        function deletePhoto(photoId) {
-            if (confirm('確定要從相簿中刪除這張照片嗎？')) {
-                album = album.filter(p => p.id !== photoId);
-                saveAlbum();
-                renderAlbum();
-                closePhotoLightbox();
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const newComment = { id: Date.now().toString(), text, time: timeStr };
+
+            if (window.isFirebaseConfigured) {
+                const { doc, updateDoc } = window.firebaseCollections;
+                const card = cards.find(c => c.id === cardId);
+                const updatedComments = [...(card.comments || []), newComment];
+                await updateDoc(doc(window.db, "cards", cardId), { comments: updatedComments });
+            } else {
+                const card = cards.find(c => c.id === cardId);
+                if (card) {
+                    card.comments = card.comments || [];
+                    card.comments.push(newComment);
+                    saveToLocalStorage();
+                }
             }
         }
 
-        // Helper
-        function escapeHtml(str) {
-            return str
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        // --- Image Helpers ---
+        function previewCardImage(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                cardImageData = evt.target.result;
+                document.getElementById('card-image-preview').src = cardImageData;
+                document.getElementById('card-image-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
         }
 
-        window.addEventListener('DOMContentLoaded', initApp);
+        function removeCardImage() {
+            cardImageData = null;
+            document.getElementById('card-image-input').value = '';
+            document.getElementById('card-image-preview-container').classList.add('hidden');
+        }
+
+        // --- Modals Control ---
+        function openCreateModal() {
+            if (currentTab === 'album') return openAlbumUploadModal();
+            document.getElementById('card-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增卡片';
+            document.getElementById('card-edit-id').value = '';
+            document.getElementById('card-form').reset();
+            removeCardImage();
+            document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-card').classList.remove('hidden');
+        }
+
+        function openEditModal(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+            document.getElementById('card-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-500"></i> 編輯卡片';
+            document.getElementById('card-edit-id').value = card.id;
+            document.getElementById('card-topic').value = card.topic;
+            document.getElementById('card-title').value = card.title;
+            document.getElementById('card-date').value = card.date;
+            document.getElementById('card-content').value = card.content;
+
+            if (card.image) {
+                cardImageData = card.image;
+                document.getElementById('card-image-preview').src = card.image;
+                document.getElementById('card-image-preview-container').classList.remove('hidden');
+            } else {
+                removeCardImage();
+            }
+
+            document.getElementById('modal-card').classList.remove('hidden');
+        }
+
+        function closeCardModal() { document.getElementById('modal-card').classList.add('hidden'); }
+
+        function openDetailModal(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+            activeCardId = cardId;
+            document.getElementById('detail-topic').innerText = card.topic;
+            document.getElementById('detail-date').innerText = card.date;
+            document.getElementById('detail-title').innerText = card.title;
+            document.getElementById('detail-content').innerText = card.content;
+
+            if (card.image) {
+                document.getElementById('detail-image').src = card.image;
+                document.getElementById('detail-image-container').classList.remove('hidden');
+            } else {
+                document.getElementById('detail-image-container').classList.add('hidden');
+            }
+
+            document.getElementById('detail-edit-btn').onclick = () => { closeDetailModal(); openEditModal(cardId); };
+            document.getElementById('detail-delete-btn').onclick = () => deleteCard(cardId);
+
+            renderDetailComments();
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); activeCardId = null; }
+
+        function renderDetailComments() {
+            if (!activeCardId) return;
+            const card = cards.find(c => c.id === activeCardId);
+            if (!card) return;
+
+            const comments = card.comments || [];
+            document.getElementById('detail-comment-count').innerText = comments.length;
+            const list = document.getElementById('detail-comments-list');
+            list.innerHTML = comments.length === 0 ? '<p class="text-xs text-amber-500 italic py-1">尚無留言</p>' : '';
+
+            comments.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100 text-xs flex justify-between gap-2';
+                el.innerHTML = `<p class="text-amber-800 leading-relaxed">${escapeHtml(c.text)}</p><span class="text-[10px] text-amber-400 whitespace-nowrap">${c.time}</span>`;
+                list.appendChild(el);
+            });
+        }
+
+        async function addCommentFromDetail() {
+            if (!activeCardId) return;
+            const input = document.getElementById('detail-comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const newComment = { id: Date.now().toString(), text, time: timeStr };
+
+            if (window.isFirebaseConfigured) {
+                const { doc, updateDoc } = window.firebaseCollections;
+                const card = cards.find(c => c.id === activeCardId);
+                const updatedComments = [...(card.comments || []), newComment];
+                await updateDoc(doc(window.db, "cards", activeCardId), { comments: updatedComments });
+            } else {
+                const card = cards.find(c => c.id === activeCardId);
+                card.comments = card.comments || [];
+                card.comments.push(newComment);
+                saveToLocalStorage();
+            }
+            input.value = '';
+            renderDetailComments();
+        }
+
+        // --- Album Logic ---
+        function openAlbumUploadModal() { document.getElementById('modal-album-upload').classList.remove('hidden'); }
+        function closeAlbumUploadModal() { document.getElementById('modal-album-upload').classList.add('hidden'); }
+
+        async function handleSaveAlbumPhotos(e) {
+            e.preventDefault();
+            const title = document.getElementById('album-title-input').value.trim();
+            const date = document.getElementById('album-date-input').value;
+            const files = document.getElementById('album-files-input').files;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64 = await fileToBase64(file);
+                const photoData = { title, date, url: base64, createdAt: new Date().toISOString() };
+
+                if (window.isFirebaseConfigured) {
+                    const { collection, addDoc } = window.firebaseCollections;
+                    await addDoc(collection(window.db, "album"), photoData);
+                } else {
+                    albumPhotos.unshift({ id: Date.now().toString() + i, ...photoData });
+                }
+            }
+
+            if (!window.isFirebaseConfigured) saveToLocalStorage();
+            closeAlbumUploadModal();
+        }
+
+        function openLightbox(photo) {
+            document.getElementById('lightbox-img').src = photo.url;
+            document.getElementById('lightbox-title').innerText = photo.title || '未命名照片';
+            document.getElementById('lightbox-date').innerText = photo.date;
+            document.getElementById('lightbox-delete-btn').onclick = () => deleteAlbumPhoto(photo.id);
+            document.getElementById('modal-lightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() { document.getElementById('modal-lightbox').classList.add('hidden'); }
+
+        async function deleteAlbumPhoto(id) {
+            if (!confirm('確定要刪除這張照片嗎？')) return;
+            if (window.isFirebaseConfigured) {
+                const { doc, deleteDoc } = window.firebaseCollections;
+                await deleteDoc(doc(window.db, "album", id));
+            } else {
+                albumPhotos = albumPhotos.filter(p => p.id !== id);
+                saveToLocalStorage();
+            }
+            closeLightbox();
+        }
+
+        // --- Tabs Control ---
+        function switchTab(tab) {
+            currentTab = tab;
+            const cardsBtn = document.getElementById('tab-cards-btn');
+            const albumBtn = document.getElementById('tab-album-btn');
+            const addBtnText = document.getElementById('add-btn-text');
+
+            if (tab === 'cards') {
+                document.getElementById('cards-view').classList.remove('hidden');
+                document.getElementById('album-view').classList.add('hidden');
+                cardsBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
+                albumBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
+                addBtnText.innerText = '新增卡片';
+            } else {
+                document.getElementById('cards-view').classList.add('hidden');
+                document.getElementById('album-view').classList.remove('hidden');
+                albumBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
+                cardsBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
+                addBtnText.innerText = '上傳照片';
+            }
+            render();
+        }
+
+        // --- Filter Logic ---
+        document.getElementById('filter-date').addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val) {
+                document.getElementById('filter-info').classList.remove('hidden');
+                document.getElementById('clear-filter').classList.remove('hidden');
+                document.getElementById('filter-date-display').innerText = val;
+            } else {
+                resetFilter();
+            }
+            render();
+        });
+
+        function resetFilter() {
+            document.getElementById('filter-date').value = '';
+            document.getElementById('filter-info').classList.add('hidden');
+            document.getElementById('clear-filter').classList.add('hidden');
+            render();
+        }
+        document.getElementById('clear-filter').addEventListener('click', resetFilter);
+
+        // --- Utility ---
+        function fileToBase64(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
     </script>
 </body>
 </html>
