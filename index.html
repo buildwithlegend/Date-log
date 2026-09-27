@@ -96,7 +96,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-amber-900 tracking-wide">暖心日誌</h1>
-                    <p class="text-xs text-amber-600">生活隨筆與另一半專屬小檔案</p>
+                    <p class="text-xs text-amber-600">生活隨筆與另一半專屬檔案</p>
                 </div>
             </div>
 
@@ -106,7 +106,7 @@
                     <i class="fa-regular fa-clone mr-1.5"></i>卡片日誌
                 </button>
                 <button id="tab-hobby-btn" onclick="switchTab('hobby')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900">
-                    <i class="fa-solid fa-heart-pulse mr-1.5 text-rose-500"></i>嗜好與興趣
+                    <i class="fa-solid fa-id-card mr-1.5 text-rose-500"></i>另一半檔案
                 </button>
             </div>
 
@@ -142,14 +142,14 @@
             </div>
         </section>
 
-        <!-- Section 2: Hobby & Interest View -->
+        <!-- Section 2: Lover Profile View -->
         <section id="hobby-view" class="hidden space-y-6">
-            <div id="hobby-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="hobby-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             <div id="hobby-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                 <div class="w-16 h-16 bg-rose-100 text-rose-400 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fa-solid fa-heart"></i></div>
-                <h3 class="text-base font-medium text-amber-800 mb-1">尚未紀錄另一半的嗜好與興趣</h3>
-                <p class="text-xs text-amber-600 mb-4">把對方的喜好、地雷與小習慣記下來吧！</p>
-                <button onclick="openHobbyModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs transition">新增第一個興趣記錄</button>
+                <h3 class="text-base font-medium text-amber-800 mb-1">尚未建立另一半檔案</h3>
+                <p class="text-xs text-amber-600 mb-4">記錄對方的生日、喜好、優缺點與小習慣吧！</p>
+                <button onclick="openHobbyModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs transition">建立第一個個人檔案</button>
             </div>
         </section>
     </main>
@@ -231,50 +231,56 @@
         </div>
     </div>
 
-    <!-- Modal: Hobby Create / Edit -->
+    <!-- Modal: Lover Profile Create / Edit -->
     <div id="modal-hobby" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
             <div class="bg-rose-50 px-5 py-3.5 border-b border-rose-100 flex justify-between items-center shrink-0">
-                <h3 id="hobby-modal-title" class="font-bold text-rose-900 text-sm flex items-center gap-2"><i class="fa-solid fa-heart text-rose-500"></i> 新增興趣 / 喜好筆記</h3>
+                <h3 id="hobby-modal-title" class="font-bold text-rose-900 text-sm flex items-center gap-2"><i class="fa-solid fa-heart text-rose-500"></i> 建立另一半檔案</h3>
                 <button onclick="closeHobbyModal()" class="text-rose-400 hover:text-rose-700"><i class="fa-solid fa-xmark text-base"></i></button>
             </div>
             <form id="hobby-form" onsubmit="handleSaveHobby(event)" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
                 <input type="hidden" id="hobby-edit-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">名稱 / 暱稱</label>
+                    <input type="text" id="hobby-name" placeholder="例如：親愛的、寶貝、小明" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-amber-800 mb-1">分類標籤</label>
-                        <select id="hobby-category" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
-                            <option value="飲食偏好">飲食偏好</option>
-                            <option value="運動戶外">運動戶外</option>
-                            <option value="休閒娛樂">休閒娛樂</option>
-                            <option value="收藏喜好">收藏喜好</option>
-                            <option value="穿搭風格">穿搭風格</option>
-                            <option value="生活習慣">生活習慣</option>
-                            <option value="地雷雷區">地雷雷區 ⚠️</option>
-                        </select>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">生日</label>
+                        <input type="date" id="hobby-birthday" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-amber-800 mb-1">喜愛程度 / 程度</label>
-                        <select id="hobby-rating" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
-                            <option value="5">⭐⭐⭐⭐⭐ 超愛 / 極重要</option>
-                            <option value="4">⭐⭐⭐⭐ 很喜歡</option>
-                            <option value="3">⭐⭐⭐ 一般喜好</option>
-                            <option value="2">⭐⭐ 偶爾興趣</option>
-                            <option value="1">⭐ 稍微了解</option>
-                        </select>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">星座</label>
+                        <input type="text" id="hobby-zodiac" placeholder="例如：天蠍座" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">嗜好項目 / 標題</label>
-                    <input type="text" id="hobby-title" placeholder="例如：拿鐵不加糖、手沖咖啡、喜歡看懸疑電影" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    <label class="block text-xs font-semibold text-emerald-800 mb-1"><i class="fa-solid fa-heart text-emerald-500 mr-1"></i>喜好區域</label>
+                    <textarea id="hobby-likes" rows="2" placeholder="喜歡食物、休閒興趣、品牌規格尺寸..." class="w-full bg-emerald-50/30 border border-emerald-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"></textarea>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">詳細備註與筆記</label>
-                    <textarea id="hobby-note" rows="4" placeholder="詳細說明，例如：不喜歡太酸的豆子、鞋號 24.5、最愛的品牌..." class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
+                    <label class="block text-xs font-semibold text-rose-800 mb-1"><i class="fa-solid fa-ban text-rose-500 mr-1"></i>討厭區域 / 地雷</label>
+                    <textarea id="hobby-dislikes" rows="2" placeholder="討厭食物、避雷事項、地雷行為..." class="w-full bg-rose-50/30 border border-rose-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-rose-400 focus:outline-none"></textarea>
                 </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1"><i class="fa-solid fa-thumbs-up text-amber-500 mr-1"></i>優點區域</label>
+                        <textarea id="hobby-strengths" rows="2" placeholder="細心、體貼、幽默..." class="w-full bg-amber-50/30 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1"><i class="fa-solid fa-face-grimace text-amber-500 mr-1"></i>缺點區域 / 小脾氣</label>
+                        <textarea id="hobby-weaknesses" rows="2" placeholder="容易被餓到、偶爾有選擇障礙..." class="w-full bg-amber-50/30 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeHobbyModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-amber-700 bg-amber-100 hover:bg-amber-200">取消</button>
-                    <button type="submit" id="hobby-submit-btn" class="px-4 py-1.5 rounded-xl text-xs text-white bg-rose-500 hover:bg-rose-600 shadow font-medium">儲存筆記</button>
+                    <button type="submit" id="hobby-submit-btn" class="px-4 py-1.5 rounded-xl text-xs text-white bg-rose-500 hover:bg-rose-600 shadow font-medium">儲存檔案</button>
                 </div>
             </form>
         </div>
@@ -403,22 +409,44 @@
             } else {
                 empty.classList.add('hidden'); empty.classList.remove('flex');
                 hobbies.forEach(item => {
-                    const stars = '⭐'.repeat(parseInt(item.rating || 5));
-                    const isDanger = item.category === '地雷雷區';
                     const el = document.createElement('div');
-                    el.className = `bg-white rounded-2xl p-4 border ${isDanger ? 'border-rose-200 bg-rose-50/20' : 'border-amber-100'} shadow-sm hover:shadow-md transition flex flex-col justify-between`;
+                    el.className = 'bg-white rounded-2xl p-5 border border-amber-100 shadow-sm hover:shadow-md transition space-y-3';
                     el.innerHTML = `
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${isDanger ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}">${escapeHtml(item.category)}</span>
-                                <div class="flex items-center gap-1">
-                                    <button onclick="openHobbyModal('${item.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 text-xs p-1"><i class="fa-regular fa-pen-to-square"></i></button>
-                                    <button onclick="deleteHobby('${item.id}')" title="刪除" class="text-amber-300 hover:text-rose-500 text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>
+                        <div class="flex justify-between items-start border-b border-amber-100 pb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-amber-900">${escapeHtml(item.name)}</h3>
+                                <div class="flex items-center gap-3 text-xs text-amber-600 mt-1">
+                                    <span><i class="fa-solid fa-cake-candles mr-1 text-rose-400"></i>${item.birthday || '未設定'}</span>
+                                    <span><i class="fa-solid fa-star mr-1 text-amber-400"></i>${escapeHtml(item.zodiac || '未設定')}</span>
                                 </div>
                             </div>
-                            <h3 class="text-base font-bold text-amber-900 mb-1">${escapeHtml(item.title)}</h3>
-                            <div class="text-[11px] text-amber-500 mb-2">${stars}</div>
-                            <p class="text-xs text-amber-800/80 leading-relaxed whitespace-pre-wrap bg-amber-50/40 p-2.5 rounded-xl border border-amber-100/50">${escapeHtml(item.note || '尚無詳細備註')}</p>
+                            <div class="flex items-center gap-1">
+                                <button onclick="openHobbyModal('${item.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 text-xs p-1"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button onclick="deleteHobby('${item.id}')" title="刪除" class="text-amber-300 hover:text-rose-500 text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-2.5 text-xs">
+                            <div class="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100/60">
+                                <div class="font-bold text-emerald-800 mb-1 flex items-center gap-1"><i class="fa-solid fa-heart text-emerald-500"></i> 喜好區域</div>
+                                <p class="text-emerald-900/80 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.likes || '尚未填寫')}</p>
+                            </div>
+
+                            <div class="bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/60">
+                                <div class="font-bold text-rose-800 mb-1 flex items-center gap-1"><i class="fa-solid fa-ban text-rose-500"></i> 討厭區域 / 地雷</div>
+                                <p class="text-rose-900/80 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.dislikes || '尚未填寫')}</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100/60">
+                                    <div class="font-bold text-amber-800 mb-1 flex items-center gap-1"><i class="fa-solid fa-thumbs-up text-amber-500"></i> 優點區域</div>
+                                    <p class="text-amber-900/80 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.strengths || '尚未填寫')}</p>
+                                </div>
+                                <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100/60">
+                                    <div class="font-bold text-amber-800 mb-1 flex items-center gap-1"><i class="fa-solid fa-face-grimace text-amber-500"></i> 缺點區域</div>
+                                    <p class="text-amber-900/80 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.weaknesses || '尚未填寫')}</p>
+                                </div>
+                            </div>
                         </div>
                     `;
                     grid.appendChild(el);
@@ -578,7 +606,7 @@
 
         function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); activeCardId = null; }
 
-        // --- Comment Actions (Support Edit & Delete) ---
+        // --- Comment Actions ---
         function renderDetailComments() {
             if (!activeCardId) return;
             const card = cards.find(c => c.id === activeCardId);
@@ -623,15 +651,8 @@
             });
         }
 
-        function startEditComment(index) {
-            editingCommentIndex = index;
-            renderDetailComments();
-        }
-
-        function cancelEditComment() {
-            editingCommentIndex = null;
-            renderDetailComments();
-        }
+        function startEditComment(index) { editingCommentIndex = index; renderDetailComments(); }
+        function cancelEditComment() { editingCommentIndex = null; renderDetailComments(); }
 
         async function saveEditComment(cardId, commentIndex) {
             const author = document.getElementById(`edit-comment-author-${commentIndex}`).value.trim() || '匿名';
@@ -704,29 +725,30 @@
             input.value = '';
         }
 
-        // --- Hobby Logic ---
+        // --- Lover Profile Logic ---
         function openHobbyModal(hobbyId = null) {
             document.getElementById('hobby-form').reset();
             if (hobbyId) {
                 const item = hobbies.find(h => h.id === hobbyId);
                 if (item) {
-                    document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-rose-500"></i> 編輯興趣筆記';
+                    document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-rose-500"></i> 編輯檔案';
                     document.getElementById('hobby-edit-id').value = item.id;
-                    document.getElementById('hobby-category').value = item.category;
-                    document.getElementById('hobby-rating').value = item.rating;
-                    document.getElementById('hobby-title').value = item.title;
-                    document.getElementById('hobby-note').value = item.note;
+                    document.getElementById('hobby-name').value = item.name || '';
+                    document.getElementById('hobby-birthday').value = item.birthday || '';
+                    document.getElementById('hobby-zodiac').value = item.zodiac || '';
+                    document.getElementById('hobby-likes').value = item.likes || '';
+                    document.getElementById('hobby-dislikes').value = item.dislikes || '';
+                    document.getElementById('hobby-strengths').value = item.strengths || '';
+                    document.getElementById('hobby-weaknesses').value = item.weaknesses || '';
                 }
             } else {
-                document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-heart text-rose-500"></i> 新增興趣 / 喜好筆記';
+                document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-heart text-rose-500"></i> 建立另一半檔案';
                 document.getElementById('hobby-edit-id').value = '';
             }
             document.getElementById('modal-hobby').classList.remove('hidden');
         }
 
-        function closeHobbyModal() {
-            document.getElementById('modal-hobby').classList.add('hidden');
-        }
+        function closeHobbyModal() { document.getElementById('modal-hobby').classList.add('hidden'); }
 
         async function handleSaveHobby(e) {
             e.preventDefault();
@@ -735,12 +757,15 @@
             submitBtn.innerText = '儲存中...';
 
             const editId = document.getElementById('hobby-edit-id').value;
-            const category = document.getElementById('hobby-category').value;
-            const rating = document.getElementById('hobby-rating').value;
-            const title = document.getElementById('hobby-title').value.trim();
-            const note = document.getElementById('hobby-note').value.trim();
+            const name = document.getElementById('hobby-name').value.trim();
+            const birthday = document.getElementById('hobby-birthday').value;
+            const zodiac = document.getElementById('hobby-zodiac').value.trim();
+            const likes = document.getElementById('hobby-likes').value.trim();
+            const dislikes = document.getElementById('hobby-dislikes').value.trim();
+            const strengths = document.getElementById('hobby-strengths').value.trim();
+            const weaknesses = document.getElementById('hobby-weaknesses').value.trim();
 
-            const hobbyData = { category, rating, title, note, updatedAt: new Date().toISOString() };
+            const hobbyData = { name, birthday, zodiac, likes, dislikes, strengths, weaknesses, updatedAt: new Date().toISOString() };
 
             try {
                 if (window.isFirebaseConfigured) {
@@ -766,12 +791,12 @@
                 alert("儲存失敗！");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '儲存筆記';
+                submitBtn.innerText = '儲存檔案';
             }
         }
 
         async function deleteHobby(id) {
-            if (!confirm('確定要刪除這筆興趣紀錄嗎？')) return;
+            if (!confirm('確定要刪除這筆檔案嗎？')) return;
             if (window.isFirebaseConfigured) {
                 const { doc, deleteDoc } = window.firebaseCollections;
                 await deleteDoc(doc(window.db, "hobbies", id));
@@ -799,7 +824,7 @@
                 document.getElementById('hobby-view').classList.remove('hidden');
                 hobbyBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
                 cardsBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
-                addBtnText.innerText = '新增興趣筆記';
+                addBtnText.innerText = '新增個人檔案';
             }
             render();
         }
