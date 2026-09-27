@@ -166,9 +166,15 @@
             </div>
             <form id="card-form" onsubmit="handleSaveCard(event)" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
                 <input type="hidden" id="card-edit-id">
-                <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">主題</label>
-                    <input type="text" id="card-topic" placeholder="例如：生活隨筆、美食..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">作者暱稱</label>
+                        <input type="text" id="card-author" placeholder="你的暱稱" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">主題</label>
+                        <input type="text" id="card-topic" placeholder="例如：生活隨筆" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-amber-800 mb-1">標題</label>
@@ -202,9 +208,10 @@
     <div id="modal-detail" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
             <div class="bg-amber-50 px-5 py-3.5 border-b border-amber-100 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <span id="detail-topic" class="text-xs px-2.5 py-0.5 rounded bg-amber-200 text-amber-800 font-medium">主題</span>
-                    <span id="detail-date" class="text-xs text-amber-600">日期</span>
+                    <span id="detail-author" class="text-xs font-semibold text-amber-700"><i class="fa-regular fa-user mr-1"></i>作者</span>
+                    <span id="detail-date" class="text-xs text-amber-500">日期</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <button id="detail-edit-btn" title="編輯" class="text-amber-600 hover:text-amber-800 p-1 rounded hover:bg-amber-100"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -220,9 +227,10 @@
                 <p id="detail-content" class="text-xs text-amber-800 leading-relaxed whitespace-pre-wrap border-b border-amber-100 pb-4"></p>
                 <div class="space-y-3">
                     <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5"><i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)</h4>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="detail-comment-author" placeholder="你的暱稱" class="w-full sm:w-28 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                         <input type="text" id="detail-comment-input" placeholder="撰寫留言..." class="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
-                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">送出</button>
+                        <button onclick="addCommentFromDetail()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap">送出</button>
                     </div>
                     <div id="detail-comments-list" class="space-y-2 pt-1"></div>
                 </div>
@@ -292,6 +300,12 @@
 
             document.getElementById('album-date-input').value = new Date().toISOString().split('T')[0];
             document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
+            
+            // 預設帶入上次使用的暱稱
+            const savedNickname = localStorage.getItem('warm_user_nickname') || '';
+            document.getElementById('card-author').value = savedNickname;
+            document.getElementById('detail-comment-author').value = savedNickname;
+
             render();
         });
 
@@ -349,6 +363,8 @@
             } else {
                 empty.classList.add('hidden'); empty.classList.remove('flex');
                 filtered.forEach(card => {
+                    const authorName = card.author || '匿名';
+                    const savedNickname = localStorage.getItem('warm_user_nickname') || '';
                     const el = document.createElement('div');
                     el.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition duration-300 flex flex-col overflow-hidden group';
                     el.innerHTML = `
@@ -356,7 +372,10 @@
                         <div class="p-4 flex-1 flex flex-col justify-between cursor-pointer" onclick="openDetailModal('${card.id}')">
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">${escapeHtml(card.topic)}</span>
+                                        <span class="text-[10px] text-amber-600 font-medium"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(authorName)}</span>
+                                    </div>
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-[10px] text-amber-500"><i class="fa-regular fa-calendar mr-1"></i>${card.date}</span>
                                         <button onclick="event.stopPropagation(); openEditModal('${card.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 p-0.5"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -368,11 +387,12 @@
                             </div>
                             <div class="text-[10px] text-amber-500 font-medium text-right pt-2 border-t border-amber-50">詳情與留言 →</div>
                         </div>
-                        <div class="bg-amber-50/50 px-4 py-2 border-t border-amber-100/60 flex items-center justify-between text-xs text-amber-700">
-                            <span class="text-[10px]"><i class="fa-regular fa-comment mr-1"></i>${(card.comments || []).length} 條留言</span>
-                            <div class="flex gap-1" onclick="event.stopPropagation()">
-                                <input type="text" id="input-quick-comment-${card.id}" placeholder="留言..." class="w-24 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-[10px]">
-                                <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px]">送出</button>
+                        <div class="bg-amber-50/50 px-3 py-2 border-t border-amber-100/60 flex items-center justify-between text-xs text-amber-700 gap-2">
+                            <span class="text-[10px] whitespace-nowrap"><i class="fa-regular fa-comment mr-1"></i>${(card.comments || []).length} 條</span>
+                            <div class="flex gap-1 flex-1 max-w-[240px]" onclick="event.stopPropagation()">
+                                <input type="text" id="input-quick-author-${card.id}" value="${escapeHtml(savedNickname)}" placeholder="暱稱" class="w-16 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-[10px]">
+                                <input type="text" id="input-quick-comment-${card.id}" placeholder="留言..." class="flex-1 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-[10px]">
+                                <button onclick="addQuickComment('${card.id}')" class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] whitespace-nowrap">送出</button>
                             </div>
                         </div>
                     `;
@@ -417,13 +437,17 @@
             submitBtn.innerText = '儲存中...';
 
             const editId = document.getElementById('card-edit-id').value;
+            const author = document.getElementById('card-author').value.trim() || '匿名';
             const topic = document.getElementById('card-topic').value.trim();
             const title = document.getElementById('card-title').value.trim();
             const date = document.getElementById('card-date').value;
             const content = document.getElementById('card-content').value.trim();
 
+            // 記憶暱稱
+            localStorage.setItem('warm_user_nickname', author);
+
             const cardData = {
-                topic, title, date, content,
+                author, topic, title, date, content,
                 image: cardImageData || null,
                 updatedAt: new Date().toISOString()
             };
@@ -470,13 +494,19 @@
         }
 
         async function addQuickComment(cardId) {
-            const input = document.getElementById(`input-quick-comment-${cardId}`);
-            const text = input.value.trim();
+            const authorInput = document.getElementById(`input-quick-author-${cardId}`);
+            const textInput = document.getElementById(`input-quick-comment-${cardId}`);
+            
+            const author = authorInput.value.trim() || '匿名';
+            const text = textInput.value.trim();
             if (!text) return;
+
+            // 記憶暱稱
+            localStorage.setItem('warm_user_nickname', author);
 
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            const newComment = { id: Date.now().toString(), text, time: timeStr };
+            const newComment = { id: Date.now().toString(), author, text, time: timeStr };
 
             if (window.isFirebaseConfigured) {
                 const { doc, updateDoc } = window.firebaseCollections;
@@ -493,7 +523,7 @@
                     saveToLocalStorage();
                 }
             }
-            input.value = '';
+            textInput.value = '';
         }
 
         // --- Image Helpers & Automatic Compression ---
@@ -552,6 +582,9 @@
             document.getElementById('card-edit-id').value = '';
             document.getElementById('card-form').reset();
             removeCardImage();
+            
+            // 帶入紀錄的暱稱與今日日期
+            document.getElementById('card-author').value = localStorage.getItem('warm_user_nickname') || '';
             document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal-card').classList.remove('hidden');
         }
@@ -561,6 +594,7 @@
             if (!card) return;
             document.getElementById('card-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-500"></i> 編輯卡片';
             document.getElementById('card-edit-id').value = card.id;
+            document.getElementById('card-author').value = card.author || localStorage.getItem('warm_user_nickname') || '';
             document.getElementById('card-topic').value = card.topic;
             document.getElementById('card-title').value = card.title;
             document.getElementById('card-date').value = card.date;
@@ -594,6 +628,7 @@
             }
 
             document.getElementById('detail-topic').innerText = card.topic;
+            document.getElementById('detail-author').innerHTML = `<i class="fa-regular fa-user mr-1"></i>${escapeHtml(card.author || '匿名')}`;
             document.getElementById('detail-date').innerText = card.date;
             document.getElementById('detail-title').innerText = card.title;
             document.getElementById('detail-content').innerText = card.content;
@@ -604,6 +639,8 @@
             } else {
                 document.getElementById('detail-image-container').classList.add('hidden');
             }
+
+            document.getElementById('detail-comment-author').value = localStorage.getItem('warm_user_nickname') || '';
 
             document.getElementById('detail-edit-btn').onclick = () => { closeDetailModal(); openEditModal(card.id); };
             document.getElementById('detail-delete-btn').onclick = () => deleteCard(card.id);
@@ -624,22 +661,35 @@
             list.innerHTML = comments.length === 0 ? '<p class="text-xs text-amber-500 italic py-1">尚無留言</p>' : '';
 
             comments.forEach(c => {
+                const authorName = c.author || '匿名';
                 const el = document.createElement('div');
-                el.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100 text-xs flex justify-between gap-2';
-                el.innerHTML = `<p class="text-amber-800 leading-relaxed">${escapeHtml(c.text)}</p><span class="text-[10px] text-amber-400 whitespace-nowrap">${c.time}</span>`;
+                el.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100 text-xs space-y-1';
+                el.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-amber-900 text-[11px]"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(authorName)}</span>
+                        <span class="text-[10px] text-amber-400">${c.time}</span>
+                    </div>
+                    <p class="text-amber-800 leading-relaxed">${escapeHtml(c.text)}</p>
+                `;
                 list.appendChild(el);
             });
         }
 
         async function addCommentFromDetail() {
             if (!activeCardId) return;
+            const authorInput = document.getElementById('detail-comment-author');
             const input = document.getElementById('detail-comment-input');
+            
+            const author = authorInput.value.trim() || '匿名';
             const text = input.value.trim();
             if (!text) return;
 
+            // 記憶暱稱
+            localStorage.setItem('warm_user_nickname', author);
+
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            const newComment = { id: Date.now().toString(), text, time: timeStr };
+            const newComment = { id: Date.now().toString(), author, text, time: timeStr };
 
             if (window.isFirebaseConfigured) {
                 const { doc, updateDoc } = window.firebaseCollections;
