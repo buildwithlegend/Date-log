@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暖心日誌 - 雲端同步版</title>
+    <title>暖心日誌 - 專屬生活手帳</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -53,7 +53,9 @@
                             400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309',
                             800: '#92400e', 900: '#78350f',
                         },
-                        warmBg: '#fbf7f4',
+                        roseCustom: {
+                            50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e', 600: '#e11d48'
+                        }
                     },
                     fontFamily: { sans: ['Noto Sans TC', 'sans-serif'] }
                 }
@@ -79,10 +81,10 @@
 </head>
 <body class="font-sans text-amber-900 min-h-screen flex flex-col justify-between">
 
-    <!-- Config Warning Banner -->
+    <!-- Warning Banner -->
     <div id="config-warning" class="bg-amber-500 text-white text-xs font-medium py-2.5 px-4 text-center shadow-inner hidden">
         <i class="fa-solid fa-triangle-exclamation mr-1.5"></i>
-        目前為「單機展示模式」。要實現多裝置（手機/電腦）跨裝置同步，請建立免費 Firebase 專案並貼入金鑰設定。
+        目前為「單機展示模式」。如需跨裝置同步，請設定 Firebase 金鑰。
     </div>
 
     <!-- Header -->
@@ -90,11 +92,11 @@
         <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-white shadow-md">
-                    <i class="fa-solid fa-cloud-sun font-bold text-lg"></i>
+                    <i class="fa-solid fa-heart font-bold text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-amber-900 tracking-wide">暖心日誌</h1>
-                    <p class="text-xs text-amber-600">跨裝置雲端相簿與日誌卡片</p>
+                    <p class="text-xs text-amber-600">生活隨筆與另一半專屬小檔案</p>
                 </div>
             </div>
 
@@ -103,8 +105,8 @@
                 <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm">
                     <i class="fa-regular fa-clone mr-1.5"></i>卡片日誌
                 </button>
-                <button id="tab-album-btn" onclick="switchTab('album')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900">
-                    <i class="fa-regular fa-images mr-1.5"></i>照片相簿
+                <button id="tab-hobby-btn" onclick="switchTab('hobby')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900">
+                    <i class="fa-solid fa-heart-pulse mr-1.5 text-rose-500"></i>嗜好與興趣
                 </button>
             </div>
 
@@ -140,14 +142,14 @@
             </div>
         </section>
 
-        <!-- Section 2: Album View -->
-        <section id="album-view" class="hidden space-y-6">
-            <div id="album-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-            <div id="album-empty" class="hidden flex-col items-center justify-center py-16 text-center">
-                <div class="w-16 h-16 bg-amber-100 text-amber-400 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fa-regular fa-image"></i></div>
-                <h3 class="text-base font-medium text-amber-800 mb-1">相簿裡還沒有照片</h3>
-                <p class="text-xs text-amber-600 mb-4">上傳美好照片到雲端相簿吧！</p>
-                <button onclick="openAlbumUploadModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs transition">上傳照片</button>
+        <!-- Section 2: Hobby & Interest View -->
+        <section id="hobby-view" class="hidden space-y-6">
+            <div id="hobby-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="hobby-empty" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 bg-rose-100 text-rose-400 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fa-solid fa-heart"></i></div>
+                <h3 class="text-base font-medium text-amber-800 mb-1">尚未紀錄另一半的嗜好與興趣</h3>
+                <p class="text-xs text-amber-600 mb-4">把對方的喜好、地雷與小習慣記下來吧！</p>
+                <button onclick="openHobbyModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs transition">新增第一個興趣記錄</button>
             </div>
         </section>
     </main>
@@ -185,14 +187,6 @@
                     <input type="date" id="card-date" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">相片 (可選，上傳自動壓縮)</label>
-                    <input type="file" id="card-image-input" accept="image/*" onchange="previewCardImage(event)" class="w-full text-xs text-amber-700 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
-                    <div id="card-image-preview-container" class="mt-2 relative hidden rounded-xl overflow-hidden border border-amber-200 max-h-40">
-                        <img id="card-image-preview" class="w-full h-full object-cover">
-                        <button type="button" onclick="removeCardImage()" class="absolute top-1.5 right-1.5 bg-red-500/80 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                </div>
-                <div>
                     <label class="block text-xs font-semibold text-amber-800 mb-1">內容</label>
                     <textarea id="card-content" rows="4" placeholder="詳細文字內容..." required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
                 </div>
@@ -221,10 +215,9 @@
             </div>
             <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                 <h2 id="detail-title" class="text-xl font-bold text-amber-900">標題</h2>
-                <div id="detail-image-container" class="hidden rounded-xl overflow-hidden border border-amber-100 max-h-80">
-                    <img id="detail-image" class="w-full h-full object-cover">
-                </div>
                 <p id="detail-content" class="text-xs text-amber-800 leading-relaxed whitespace-pre-wrap border-b border-amber-100 pb-4"></p>
+                
+                <!-- Comment Section -->
                 <div class="space-y-3">
                     <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5"><i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)</h4>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -238,56 +231,62 @@
         </div>
     </div>
 
-    <!-- Modal: Album Upload -->
-    <div id="modal-album-upload" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-amber-100 overflow-hidden">
-            <div class="bg-amber-50 px-5 py-3.5 border-b border-amber-100 flex justify-between items-center">
-                <h3 class="font-bold text-amber-900 text-sm flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up text-amber-500"></i> 上傳照片至相簿</h3>
-                <button onclick="closeAlbumUploadModal()" class="text-amber-400 hover:text-amber-700"><i class="fa-solid fa-xmark text-base"></i></button>
+    <!-- Modal: Hobby Create / Edit -->
+    <div id="modal-hobby" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="bg-rose-50 px-5 py-3.5 border-b border-rose-100 flex justify-between items-center shrink-0">
+                <h3 id="hobby-modal-title" class="font-bold text-rose-900 text-sm flex items-center gap-2"><i class="fa-solid fa-heart text-rose-500"></i> 新增興趣 / 喜好筆記</h3>
+                <button onclick="closeHobbyModal()" class="text-rose-400 hover:text-rose-700"><i class="fa-solid fa-xmark text-base"></i></button>
             </div>
-            <form onsubmit="handleSaveAlbumPhotos(event)" class="p-5 space-y-3.5">
-                <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">照片標題</label>
-                    <input type="text" id="album-title-input" placeholder="例如：花海步道" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+            <form id="hobby-form" onsubmit="handleSaveHobby(event)" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+                <input type="hidden" id="hobby-edit-id">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">分類標籤</label>
+                        <select id="hobby-category" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            <option value="飲食偏好">飲食偏好</option>
+                            <option value="運動戶外">運動戶外</option>
+                            <option value="休閒娛樂">休閒娛樂</option>
+                            <option value="收藏喜好">收藏喜好</option>
+                            <option value="穿搭風格">穿搭風格</option>
+                            <option value="生活習慣">生活習慣</option>
+                            <option value="地雷雷區">地雷雷區 ⚠️</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-amber-800 mb-1">喜愛程度 / 程度</label>
+                        <select id="hobby-rating" class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            <option value="5">⭐⭐⭐⭐⭐ 超愛 / 極重要</option>
+                            <option value="4">⭐⭐⭐⭐ 很喜歡</option>
+                            <option value="3">⭐⭐⭐ 一般喜好</option>
+                            <option value="2">⭐⭐ 偶爾興趣</option>
+                            <option value="1">⭐ 稍微了解</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">拍攝/紀錄日期</label>
-                    <input type="date" id="album-date-input" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">嗜好項目 / 標題</label>
+                    <input type="text" id="hobby-title" placeholder="例如：拿鐵不加糖、手沖咖啡、喜歡看懸疑電影" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-amber-800 mb-1">選擇照片 (支援多選，上傳自動壓縮)</label>
-                    <input type="file" id="album-files-input" accept="image/*" multiple required class="w-full text-xs text-amber-700 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">詳細備註與筆記</label>
+                    <textarea id="hobby-note" rows="4" placeholder="詳細說明，例如：不喜歡太酸的豆子、鞋號 24.5、最愛的品牌..." class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeAlbumUploadModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-amber-700 bg-amber-100 hover:bg-amber-200">取消</button>
-                    <button type="submit" id="album-submit-btn" class="px-4 py-1.5 rounded-xl text-xs text-white bg-amber-500 hover:bg-amber-600 font-medium shadow">開始上傳</button>
+                    <button type="button" onclick="closeHobbyModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-amber-700 bg-amber-100 hover:bg-amber-200">取消</button>
+                    <button type="submit" id="hobby-submit-btn" class="px-4 py-1.5 rounded-xl text-xs text-white bg-rose-500 hover:bg-rose-600 shadow font-medium">儲存筆記</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Lightbox Modal -->
-    <div id="modal-lightbox" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
-        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
-            <img id="lightbox-img" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain">
-            <div class="text-white text-center mt-3 flex items-center gap-4">
-                <div>
-                    <p id="lightbox-title" class="font-medium text-sm"></p>
-                    <p id="lightbox-date" class="text-xs text-gray-300"></p>
-                </div>
-                <button id="lightbox-delete-btn" class="bg-red-500/80 hover:bg-red-600 text-white text-xs px-2.5 py-1 rounded-lg"><i class="fa-regular fa-trash-can mr-1"></i>刪除</button>
-            </div>
-            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white text-xl hover:text-gray-300"><i class="fa-solid fa-xmark"></i></button>
         </div>
     </div>
 
     <!-- Core App Logic -->
     <script>
         let cards = [];
-        let albumPhotos = [];
+        let hobbies = [];
         let currentTab = 'cards';
         let activeCardId = null;
-        let cardImageData = null;
+        let editingCommentIndex = null;
 
         // --- Init Function ---
         window.addEventListener('load', () => {
@@ -298,7 +297,6 @@
                 setupFirebaseListeners();
             }
 
-            document.getElementById('album-date-input').value = new Date().toISOString().split('T')[0];
             document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
             
             // 預設帶入上次使用的暱稱
@@ -312,13 +310,13 @@
         // --- LocalStorage Fallback ---
         function loadFromLocalStorage() {
             cards = JSON.parse(localStorage.getItem('warm_cards') || '[]');
-            albumPhotos = JSON.parse(localStorage.getItem('warm_album') || '[]');
+            hobbies = JSON.parse(localStorage.getItem('warm_hobbies') || '[]');
             render();
         }
 
         function saveToLocalStorage() {
             localStorage.setItem('warm_cards', JSON.stringify(cards));
-            localStorage.setItem('warm_album', JSON.stringify(albumPhotos));
+            localStorage.setItem('warm_hobbies', JSON.stringify(hobbies));
             render();
         }
 
@@ -326,19 +324,14 @@
         function setupFirebaseListeners() {
             const { collection, onSnapshot } = window.firebaseCollections;
             
-            // 實時監聽卡片集合 (cards)
             onSnapshot(collection(window.db, "cards"), (snapshot) => {
                 cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 render();
-                // 若開啟詳情彈窗，則同步更新彈窗內容
-                if (activeCardId) {
-                    renderDetailModalContent();
-                }
+                if (activeCardId) renderDetailModalContent();
             });
 
-            // 實時監聽相簿集合 (album)
-            onSnapshot(collection(window.db, "album"), (snapshot) => {
-                albumPhotos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            onSnapshot(collection(window.db, "hobbies"), (snapshot) => {
+                hobbies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 render();
             });
         }
@@ -347,7 +340,7 @@
         function render() {
             const filterDate = document.getElementById('filter-date').value;
             if (currentTab === 'cards') renderCards(filterDate);
-            else renderAlbum(filterDate);
+            else renderHobbies();
         }
 
         function renderCards(filterDate = '') {
@@ -368,7 +361,6 @@
                     const el = document.createElement('div');
                     el.className = 'bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition duration-300 flex flex-col overflow-hidden group';
                     el.innerHTML = `
-                        ${card.image ? `<div class="h-36 w-full overflow-hidden cursor-pointer" onclick="openDetailModal('${card.id}')"><img src="${card.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500"></div>` : ''}
                         <div class="p-4 flex-1 flex flex-col justify-between cursor-pointer" onclick="openDetailModal('${card.id}')">
                             <div>
                                 <div class="flex justify-between items-center mb-2">
@@ -401,27 +393,32 @@
             }
         }
 
-        function renderAlbum(filterDate = '') {
-            const grid = document.getElementById('album-grid');
-            const empty = document.getElementById('album-empty');
+        function renderHobbies() {
+            const grid = document.getElementById('hobby-grid');
+            const empty = document.getElementById('hobby-empty');
             grid.innerHTML = '';
 
-            let filtered = [...albumPhotos].sort((a,b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
-            if (filterDate) filtered = filtered.filter(p => p.date === filterDate);
-
-            if (filtered.length === 0) {
+            if (hobbies.length === 0) {
                 empty.classList.remove('hidden'); empty.classList.add('flex');
             } else {
                 empty.classList.add('hidden'); empty.classList.remove('flex');
-                filtered.forEach(photo => {
+                hobbies.forEach(item => {
+                    const stars = '⭐'.repeat(parseInt(item.rating || 5));
+                    const isDanger = item.category === '地雷雷區';
                     const el = document.createElement('div');
-                    el.className = 'group relative aspect-square bg-amber-100 rounded-xl overflow-hidden shadow-sm cursor-pointer border border-amber-100';
-                    el.onclick = () => openLightbox(photo);
+                    el.className = `bg-white rounded-2xl p-4 border ${isDanger ? 'border-rose-200 bg-rose-50/20' : 'border-amber-100'} shadow-sm hover:shadow-md transition flex flex-col justify-between`;
                     el.innerHTML = `
-                        <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-end text-white">
-                            <p class="text-xs font-medium truncate">${escapeHtml(photo.title || '未命名照片')}</p>
-                            <p class="text-[10px] text-gray-300">${photo.date}</p>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${isDanger ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}">${escapeHtml(item.category)}</span>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="openHobbyModal('${item.id}')" title="編輯" class="text-amber-400 hover:text-amber-700 text-xs p-1"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    <button onclick="deleteHobby('${item.id}')" title="刪除" class="text-amber-300 hover:text-rose-500 text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <h3 class="text-base font-bold text-amber-900 mb-1">${escapeHtml(item.title)}</h3>
+                            <div class="text-[11px] text-amber-500 mb-2">${stars}</div>
+                            <p class="text-xs text-amber-800/80 leading-relaxed whitespace-pre-wrap bg-amber-50/40 p-2.5 rounded-xl border border-amber-100/50">${escapeHtml(item.note || '尚無詳細備註')}</p>
                         </div>
                     `;
                     grid.appendChild(el);
@@ -443,12 +440,10 @@
             const date = document.getElementById('card-date').value;
             const content = document.getElementById('card-content').value.trim();
 
-            // 記憶暱稱
             localStorage.setItem('warm_user_nickname', author);
 
             const cardData = {
                 author, topic, title, date, content,
-                image: cardImageData || null,
                 updatedAt: new Date().toISOString()
             };
 
@@ -474,7 +469,7 @@
                 closeCardModal();
             } catch (err) {
                 console.error("儲存失敗:", err);
-                alert("儲存失敗，可能圖檔過大或連線中斷！");
+                alert("儲存失敗，請重試！");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = '儲存卡片';
@@ -501,7 +496,6 @@
             const text = textInput.value.trim();
             if (!text) return;
 
-            // 記憶暱稱
             localStorage.setItem('warm_user_nickname', author);
 
             const now = new Date();
@@ -526,64 +520,13 @@
             textInput.value = '';
         }
 
-        // --- Image Helpers & Automatic Compression ---
-        async function previewCardImage(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            try {
-                cardImageData = await compressImage(file, 1024, 0.7);
-                document.getElementById('card-image-preview').src = cardImageData;
-                document.getElementById('card-image-preview-container').classList.remove('hidden');
-            } catch (err) {
-                console.error("圖片讀取失敗:", err);
-            }
-        }
-
-        function removeCardImage() {
-            cardImageData = null;
-            document.getElementById('card-image-input').value = '';
-            document.getElementById('card-image-preview-container').classList.add('hidden');
-        }
-
-        function compressImage(file, maxWidth = 1024, quality = 0.7) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('canvas');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                    img.onerror = (error) => reject(error);
-                };
-                reader.onerror = (error) => reject(error);
-            });
-        }
-
         // --- Modals Control ---
         function openCreateModal() {
-            if (currentTab === 'album') return openAlbumUploadModal();
+            if (currentTab === 'hobby') return openHobbyModal();
             document.getElementById('card-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增卡片';
             document.getElementById('card-edit-id').value = '';
             document.getElementById('card-form').reset();
-            removeCardImage();
             
-            // 帶入紀錄的暱稱與今日日期
             document.getElementById('card-author').value = localStorage.getItem('warm_user_nickname') || '';
             document.getElementById('card-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal-card').classList.remove('hidden');
@@ -599,14 +542,6 @@
             document.getElementById('card-title').value = card.title;
             document.getElementById('card-date').value = card.date;
             document.getElementById('card-content').value = card.content;
-
-            if (card.image) {
-                cardImageData = card.image;
-                document.getElementById('card-image-preview').src = card.image;
-                document.getElementById('card-image-preview-container').classList.remove('hidden');
-            } else {
-                removeCardImage();
-            }
 
             document.getElementById('modal-card').classList.remove('hidden');
         }
@@ -633,13 +568,6 @@
             document.getElementById('detail-title').innerText = card.title;
             document.getElementById('detail-content').innerText = card.content;
 
-            if (card.image) {
-                document.getElementById('detail-image').src = card.image;
-                document.getElementById('detail-image-container').classList.remove('hidden');
-            } else {
-                document.getElementById('detail-image-container').classList.add('hidden');
-            }
-
             document.getElementById('detail-comment-author').value = localStorage.getItem('warm_user_nickname') || '';
 
             document.getElementById('detail-edit-btn').onclick = () => { closeDetailModal(); openEditModal(card.id); };
@@ -650,6 +578,7 @@
 
         function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); activeCardId = null; }
 
+        // --- Comment Actions (Support Edit & Delete) ---
         function renderDetailComments() {
             if (!activeCardId) return;
             const card = cards.find(c => c.id === activeCardId);
@@ -660,19 +589,86 @@
             const list = document.getElementById('detail-comments-list');
             list.innerHTML = comments.length === 0 ? '<p class="text-xs text-amber-500 italic py-1">尚無留言</p>' : '';
 
-            comments.forEach(c => {
+            comments.forEach((c, index) => {
                 const authorName = c.author || '匿名';
+                const isEditing = editingCommentIndex === index;
                 const el = document.createElement('div');
-                el.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100 text-xs space-y-1';
-                el.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-amber-900 text-[11px]"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(authorName)}</span>
-                        <span class="text-[10px] text-amber-400">${c.time}</span>
-                    </div>
-                    <p class="text-amber-800 leading-relaxed">${escapeHtml(c.text)}</p>
-                `;
+                el.className = 'bg-amber-50/70 p-2.5 rounded-xl border border-amber-100 text-xs space-y-1 relative group';
+                
+                if (isEditing) {
+                    el.innerHTML = `
+                        <div class="space-y-2">
+                            <input type="text" id="edit-comment-author-${index}" value="${escapeHtml(authorName)}" class="w-full bg-white border border-amber-200 rounded px-2 py-1 text-xs">
+                            <textarea id="edit-comment-text-${index}" class="w-full bg-white border border-amber-200 rounded px-2 py-1 text-xs" rows="2">${escapeHtml(c.text)}</textarea>
+                            <div class="flex justify-end gap-1.5">
+                                <button onclick="cancelEditComment()" class="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-700">取消</button>
+                                <button onclick="saveEditComment('${card.id}', ${index})" class="text-[10px] px-2 py-0.5 rounded bg-amber-500 text-white">儲存修改</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    el.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-amber-900 text-[11px]"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(authorName)}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-amber-400">${c.time}</span>
+                                <button onclick="startEditComment(${index})" class="text-amber-400 hover:text-amber-700 text-[10px]" title="編輯留言"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button onclick="deleteComment('${card.id}', ${index})" class="text-amber-300 hover:text-red-500 text-[10px]" title="刪除留言"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                        <p class="text-amber-800 leading-relaxed">${escapeHtml(c.text)}</p>
+                    `;
+                }
                 list.appendChild(el);
             });
+        }
+
+        function startEditComment(index) {
+            editingCommentIndex = index;
+            renderDetailComments();
+        }
+
+        function cancelEditComment() {
+            editingCommentIndex = null;
+            renderDetailComments();
+        }
+
+        async function saveEditComment(cardId, commentIndex) {
+            const author = document.getElementById(`edit-comment-author-${commentIndex}`).value.trim() || '匿名';
+            const text = document.getElementById(`edit-comment-text-${commentIndex}`).value.trim();
+            if (!text) return;
+
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            card.comments[commentIndex].author = author;
+            card.comments[commentIndex].text = text;
+
+            if (window.isFirebaseConfigured) {
+                const { doc, updateDoc } = window.firebaseCollections;
+                await updateDoc(doc(window.db, "cards", cardId), { comments: card.comments });
+            } else {
+                saveToLocalStorage();
+            }
+
+            editingCommentIndex = null;
+            renderDetailComments();
+        }
+
+        async function deleteComment(cardId, commentIndex) {
+            if (!confirm('確定要刪除這條留言嗎？')) return;
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            card.comments.splice(commentIndex, 1);
+
+            if (window.isFirebaseConfigured) {
+                const { doc, updateDoc } = window.firebaseCollections;
+                await updateDoc(doc(window.db, "cards", cardId), { comments: card.comments });
+            } else {
+                saveToLocalStorage();
+            }
+            renderDetailComments();
         }
 
         async function addCommentFromDetail() {
@@ -684,7 +680,6 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // 記憶暱稱
             localStorage.setItem('warm_user_nickname', author);
 
             const now = new Date();
@@ -709,86 +704,102 @@
             input.value = '';
         }
 
-        // --- Album Logic ---
-        function openAlbumUploadModal() { document.getElementById('modal-album-upload').classList.remove('hidden'); }
-        function closeAlbumUploadModal() { document.getElementById('modal-album-upload').classList.add('hidden'); }
+        // --- Hobby Logic ---
+        function openHobbyModal(hobbyId = null) {
+            document.getElementById('hobby-form').reset();
+            if (hobbyId) {
+                const item = hobbies.find(h => h.id === hobbyId);
+                if (item) {
+                    document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-rose-500"></i> 編輯興趣筆記';
+                    document.getElementById('hobby-edit-id').value = item.id;
+                    document.getElementById('hobby-category').value = item.category;
+                    document.getElementById('hobby-rating').value = item.rating;
+                    document.getElementById('hobby-title').value = item.title;
+                    document.getElementById('hobby-note').value = item.note;
+                }
+            } else {
+                document.getElementById('hobby-modal-title').innerHTML = '<i class="fa-solid fa-heart text-rose-500"></i> 新增興趣 / 喜好筆記';
+                document.getElementById('hobby-edit-id').value = '';
+            }
+            document.getElementById('modal-hobby').classList.remove('hidden');
+        }
 
-        async function handleSaveAlbumPhotos(e) {
+        function closeHobbyModal() {
+            document.getElementById('modal-hobby').classList.add('hidden');
+        }
+
+        async function handleSaveHobby(e) {
             e.preventDefault();
-            const submitBtn = document.getElementById('album-submit-btn');
+            const submitBtn = document.getElementById('hobby-submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerText = '上傳中...';
+            submitBtn.innerText = '儲存中...';
 
-            const title = document.getElementById('album-title-input').value.trim();
-            const date = document.getElementById('album-date-input').value;
-            const files = document.getElementById('album-files-input').files;
+            const editId = document.getElementById('hobby-edit-id').value;
+            const category = document.getElementById('hobby-category').value;
+            const rating = document.getElementById('hobby-rating').value;
+            const title = document.getElementById('hobby-title').value.trim();
+            const note = document.getElementById('hobby-note').value.trim();
+
+            const hobbyData = { category, rating, title, note, updatedAt: new Date().toISOString() };
 
             try {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const compressedBase64 = await compressImage(file, 1024, 0.7);
-                    const photoData = { title, date, url: compressedBase64, createdAt: new Date().toISOString() };
-
-                    if (window.isFirebaseConfigured) {
-                        const { collection, addDoc } = window.firebaseCollections;
-                        await addDoc(collection(window.db, "album"), photoData);
+                if (window.isFirebaseConfigured) {
+                    const { collection, addDoc, doc, updateDoc } = window.firebaseCollections;
+                    if (editId) {
+                        await updateDoc(doc(window.db, "hobbies", editId), hobbyData);
                     } else {
-                        albumPhotos.unshift({ id: Date.now().toString() + i, ...photoData });
+                        hobbyData.createdAt = new Date().toISOString();
+                        await addDoc(collection(window.db, "hobbies"), hobbyData);
                     }
+                } else {
+                    if (editId) {
+                        const idx = hobbies.findIndex(h => h.id === editId);
+                        if (idx !== -1) hobbies[idx] = { ...hobbies[idx], ...hobbyData };
+                    } else {
+                        hobbies.unshift({ id: Date.now().toString(), createdAt: new Date().toISOString(), ...hobbyData });
+                    }
+                    saveToLocalStorage();
                 }
-
-                if (!window.isFirebaseConfigured) saveToLocalStorage();
-                closeAlbumUploadModal();
+                closeHobbyModal();
             } catch (err) {
-                console.error("相簿照片上傳失敗:", err);
-                alert("照片上傳失敗！");
+                console.error("儲存失敗:", err);
+                alert("儲存失敗！");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '開始上傳';
+                submitBtn.innerText = '儲存筆記';
             }
         }
 
-        function openLightbox(photo) {
-            document.getElementById('lightbox-img').src = photo.url;
-            document.getElementById('lightbox-title').innerText = photo.title || '未命名照片';
-            document.getElementById('lightbox-date').innerText = photo.date;
-            document.getElementById('lightbox-delete-btn').onclick = () => deleteAlbumPhoto(photo.id);
-            document.getElementById('modal-lightbox').classList.remove('hidden');
-        }
-
-        function closeLightbox() { document.getElementById('modal-lightbox').classList.add('hidden'); }
-
-        async function deleteAlbumPhoto(id) {
-            if (!confirm('確定要刪除這張照片嗎？')) return;
+        async function deleteHobby(id) {
+            if (!confirm('確定要刪除這筆興趣紀錄嗎？')) return;
             if (window.isFirebaseConfigured) {
                 const { doc, deleteDoc } = window.firebaseCollections;
-                await deleteDoc(doc(window.db, "album", id));
+                await deleteDoc(doc(window.db, "hobbies", id));
             } else {
-                albumPhotos = albumPhotos.filter(p => p.id !== id);
+                hobbies = hobbies.filter(h => h.id !== id);
                 saveToLocalStorage();
             }
-            closeLightbox();
         }
 
         // --- Tabs Control ---
         function switchTab(tab) {
             currentTab = tab;
             const cardsBtn = document.getElementById('tab-cards-btn');
-            const albumBtn = document.getElementById('tab-album-btn');
+            const hobbyBtn = document.getElementById('tab-hobby-btn');
             const addBtnText = document.getElementById('add-btn-text');
 
             if (tab === 'cards') {
                 document.getElementById('cards-view').classList.remove('hidden');
-                document.getElementById('album-view').classList.add('hidden');
+                document.getElementById('hobby-view').classList.add('hidden');
                 cardsBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
-                albumBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
+                hobbyBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
                 addBtnText.innerText = '新增卡片';
             } else {
                 document.getElementById('cards-view').classList.add('hidden');
-                document.getElementById('album-view').classList.remove('hidden');
-                albumBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
+                document.getElementById('hobby-view').classList.remove('hidden');
+                hobbyBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition bg-white text-amber-900 shadow-sm';
                 cardsBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition text-amber-700 hover:text-amber-900';
-                addBtnText.innerText = '上傳照片';
+                addBtnText.innerText = '新增興趣筆記';
             }
             render();
         }
