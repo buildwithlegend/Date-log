@@ -14,7 +14,7 @@
     <!-- Firebase SDK (v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAuPfNJ9pN_Yu1gjBarP-JiFEVwFhtIRrg",
@@ -34,7 +34,7 @@
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 window.db = db;
-                window.firebaseCollections = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy };
+                window.firebaseCollections = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, query, orderBy };
             } catch (e) {
                 console.error("Firebase 初始化失敗:", e);
             }
@@ -58,6 +58,9 @@
                         },
                         purpleCustom: {
                             50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 500: '#a855f7', 600: '#9333ea', 800: '#6b21a8'
+                        },
+                        tealCustom: {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 500: '#14b8a6', 600: '#0d9488', 800: '#115e59'
                         }
                     },
                     fontFamily: { sans: ['Noto Sans TC', 'sans-serif'] }
@@ -80,6 +83,14 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 10px; }
+        
+        /* 橫線筆記本風格 */
+        .notepad-paper {
+            background: #ffffff;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 100% 2rem;
+            line-height: 2rem;
+        }
     </style>
 </head>
 <body class="font-sans text-amber-900 min-h-screen flex flex-col justify-between">
@@ -103,21 +114,24 @@
                 </div>
             </div>
 
-            <!-- View Tabs (3 個主要分頁) -->
+            <!-- View Tabs (4 個主要分頁) -->
             <div class="flex bg-amber-100/70 p-1 rounded-xl border border-amber-200/80 flex-wrap justify-center gap-1">
-                <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm">
+                <button id="tab-cards-btn" onclick="switchTab('cards')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm">
                     <i class="fa-regular fa-clone mr-1"></i>卡片日誌
                 </button>
-                <button id="tab-hobby-btn" onclick="switchTab('hobby')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900">
+                <button id="tab-hobby-btn" onclick="switchTab('hobby')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900">
                     <i class="fa-solid fa-id-card mr-1 text-rose-500"></i>另一半檔案
                 </button>
-                <button id="tab-secret-btn" onclick="switchTab('secret')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-purple-700">
+                <button id="tab-secret-btn" onclick="switchTab('secret')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-purple-700">
                     <i class="fa-solid fa-key mr-1 text-purple-500"></i>內心私語
+                </button>
+                <button id="tab-agreement-btn" onclick="switchTab('agreement')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-teal-700">
+                    <i class="fa-solid fa-handshake mr-1 text-teal-600"></i>約法三章
                 </button>
             </div>
 
             <!-- Controls -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2" id="header-controls">
                 <input type="date" id="filter-date" class="bg-white border border-amber-200 rounded-xl px-2.5 py-1.5 text-xs text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm">
                 <button id="clear-filter" title="清除篩選" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-700 px-2.5 py-1.5 rounded-xl text-xs transition">
                     <i class="fa-solid fa-rotate"></i>
@@ -159,9 +173,8 @@
             </div>
         </section>
 
-        <!-- Section 3: Inner Secret Messages View (第三區域：內心留言區) -->
+        <!-- Section 3: Inner Secret Messages View -->
         <section id="secret-view" class="hidden space-y-6">
-            <!-- 未解鎖鎖定畫面 -->
             <div id="secret-lock-screen" class="bg-white/80 backdrop-blur border border-purple-100 rounded-2xl p-8 max-w-md mx-auto text-center shadow-sm space-y-4">
                 <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto shadow-inner">
                     <i class="fa-solid fa-user-lock"></i>
@@ -171,20 +184,25 @@
                     <p class="text-xs text-purple-600 mt-1">這裡存放不易開口、但放在心裡深處的事情。</p>
                 </div>
                 <div class="space-y-2 pt-2">
-                    <input type="password" id="secret-pin-input" placeholder="輸入解鎖密碼" class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2 text-xs text-center focus:ring-2 focus:ring-purple-400 focus:outline-none">
-                    <button onclick="unlockSecretView()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium py-2 rounded-xl transition shadow">進入私密空間</button>
+                    <input type="password" id="secret-pin-input" placeholder="輸入解鎖密碼 (預設: 1234)" class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2 text-xs text-center focus:ring-2 focus:ring-purple-400 focus:outline-none">
+                    <div class="flex gap-2">
+                        <button onclick="unlockSecretView()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium py-2 rounded-xl transition shadow">進入私密空間</button>
+                        <button onclick="openChangePinModal()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-medium px-3 py-2 rounded-xl transition">修改密碼</button>
+                    </div>
                 </div>
-                <p class="text-[10px] text-purple-400">💡 首次預設密碼為 <span class="font-bold">0</span>，可在開啟後自行修改。</p>
+                <p class="text-[10px] text-purple-400">💡 首次預設密碼為 <span class="font-bold">1234</span>，點擊修改密碼即可進行設定。</p>
             </div>
 
-            <!-- 已解鎖畫面 -->
             <div id="secret-content-screen" class="hidden space-y-6">
                 <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-5 rounded-2xl shadow-md flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-feather text-purple-300"></i> 內心悄悄話區</h2>
                         <p class="text-xs text-purple-200 mt-1">傾訴平日不易開口的情緒與心聲。</p>
                     </div>
-                    <button onclick="lockSecretView()" class="bg-white/20 hover:bg-white/30 text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-lock mr-1"></i>重新上鎖</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openChangePinModal()" class="bg-white/20 hover:bg-white/30 text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-gear mr-1"></i>修改密碼</button>
+                        <button onclick="lockSecretView()" class="bg-white/20 hover:bg-white/30 text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-lock mr-1"></i>重新上鎖</button>
+                    </div>
                 </div>
 
                 <div id="secrets-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
@@ -194,6 +212,36 @@
                     <p class="text-xs text-purple-600 mb-4">有什麼想傾訴的事情嗎？寫下來給自己或珍藏起來吧。</p>
                     <button onclick="openSecretModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs transition">新增第一個私語</button>
                 </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Agreement Notebook View -->
+        <section id="agreement-view" class="hidden space-y-4 max-w-4xl mx-auto">
+            <div class="bg-gradient-to-r from-teal-800 to-teal-600 text-white p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <div>
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-handshake text-teal-200"></i> 約法三章 (雙方共識記事本)</h2>
+                    <p class="text-xs text-teal-100 mt-1">寫下彼此達成共識的事情、共同遵守的小約定與承諾。</p>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-auto">
+                    <span id="agreement-save-status" class="text-xs text-teal-200 italic font-light">已同步</span>
+                    <button onclick="saveAgreementContent()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-regular fa-floppy-disk"></i> 儲存共識
+                    </button>
+                </div>
+            </div>
+
+            <!-- 空白記事本卡片 -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-teal-100/80 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-teal-500"></div>
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-teal-100">
+                    <span class="text-xs font-semibold text-teal-700 flex items-center gap-1.5"><i class="fa-solid fa-scroll"></i> 共識清單記事本</span>
+                    <span id="agreement-last-updated" class="text-[10px] text-teal-500">最後更新：尚未更新</span>
+                </div>
+                <textarea id="agreement-text" rows="16" placeholder="例如：
+1. 生氣不過夜，有不開心當天溝通清楚。
+2. 假日吵架先冷靜10分鐘，不能隨意提分手。
+3. 輪流決定週末想吃的餐廳。
+..." class="w-full notepad-paper border-0 text-sm text-amber-900/90 focus:outline-none resize-y p-2 custom-scrollbar"></textarea>
             </div>
         </section>
     </main>
@@ -261,7 +309,6 @@
                 <h2 id="detail-title" class="text-xl font-bold text-amber-900">標題</h2>
                 <p id="detail-content" class="text-xs text-amber-800 leading-relaxed whitespace-pre-wrap border-b border-amber-100 pb-4"></p>
                 
-                <!-- Comment Section -->
                 <div class="space-y-3">
                     <h4 class="font-bold text-amber-900 text-xs flex items-center gap-1.5"><i class="fa-regular fa-comments text-amber-500"></i> 留言討論 (<span id="detail-comment-count">0</span>)</h4>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -297,11 +344,10 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-amber-800 mb-1">星座</label>
-                        <input type="text" id="hobby-zodiac" placeholder="金牛座" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                        <input type="text" id="hobby-zodiac" placeholder="例如：天蠍座" required class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none">
                     </div>
                 </div>
 
-                <!-- 四大區域：頁籤切換選單 -->
                 <div>
                     <label class="block text-xs font-semibold text-amber-800 mb-1.5">詳細分類記錄</label>
                     
@@ -345,7 +391,7 @@
         </div>
     </div>
 
-    <!-- Modal: Secret Message Create / Edit (私密內心話模組) -->
+    <!-- Modal: Secret Message Create / Edit -->
     <div id="modal-secret" class="fixed inset-0 bg-purple-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-purple-100 overflow-hidden max-h-[90vh] flex flex-col">
             <div class="bg-purple-50 px-5 py-3.5 border-b border-purple-100 flex justify-between items-center shrink-0">
@@ -384,11 +430,41 @@
         </div>
     </div>
 
+    <!-- Modal: Change Pin -->
+    <div id="modal-change-pin" class="fixed inset-0 bg-purple-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-purple-100 overflow-hidden flex flex-col">
+            <div class="bg-purple-50 px-5 py-3.5 border-b border-purple-100 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-purple-900 text-sm flex items-center gap-2"><i class="fa-solid fa-key text-purple-600"></i> 修改私密密碼</h3>
+                <button onclick="closeChangePinModal()" class="text-purple-400 hover:text-purple-700"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <form onsubmit="handleChangePin(event)" class="p-5 space-y-3.5 flex-1">
+                <div>
+                    <label class="block text-xs font-semibold text-purple-900 mb-1">舊密碼</label>
+                    <input type="password" id="old-pin-input" placeholder="請輸入舊密碼" required class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-purple-900 mb-1">新密碼</label>
+                    <input type="password" id="new-pin-input" placeholder="請輸入新密碼" required class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-purple-900 mb-1">確認新密碼</label>
+                    <input type="password" id="confirm-pin-input" placeholder="再次輸入新密碼" required class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeChangePinModal()" class="px-3.5 py-1.5 rounded-xl text-xs text-purple-700 bg-purple-100 hover:bg-purple-200">取消</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs text-white bg-purple-600 hover:bg-purple-700 shadow font-medium">確認修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
     <script>
         let cards = [];
         let hobbies = [];
         let secrets = [];
+        let agreementData = { content: '', updatedAt: '' };
         let currentTab = 'cards';
         let activeCardId = null;
         let editingCommentIndex = null;
@@ -410,6 +486,12 @@
             document.getElementById('card-author').value = savedNickname;
             document.getElementById('detail-comment-author').value = savedNickname;
 
+            // 監聽約法三章記事本打字，即時本地快照備份
+            document.getElementById('agreement-text').addEventListener('input', (e) => {
+                document.getElementById('agreement-save-status').innerText = '編輯中...';
+                localStorage.setItem('warm_agreement_draft', e.target.value);
+            });
+
             render();
         });
 
@@ -418,6 +500,14 @@
             cards = JSON.parse(localStorage.getItem('warm_cards') || '[]');
             hobbies = JSON.parse(localStorage.getItem('warm_hobbies') || '[]');
             secrets = JSON.parse(localStorage.getItem('warm_secrets') || '[]');
+            
+            const savedAgreement = localStorage.getItem('warm_agreement_data');
+            if (savedAgreement) {
+                agreementData = JSON.parse(savedAgreement);
+            } else {
+                agreementData = { content: localStorage.getItem('warm_agreement_draft') || '', updatedAt: '' };
+            }
+            renderAgreement();
             render();
         }
 
@@ -425,12 +515,13 @@
             localStorage.setItem('warm_cards', JSON.stringify(cards));
             localStorage.setItem('warm_hobbies', JSON.stringify(hobbies));
             localStorage.setItem('warm_secrets', JSON.stringify(secrets));
+            localStorage.setItem('warm_agreement_data', JSON.stringify(agreementData));
             render();
         }
 
         // --- Firebase Cloud Realtime Sync ---
         function setupFirebaseListeners() {
-            const { collection, onSnapshot } = window.firebaseCollections;
+            const { collection, onSnapshot, doc } = window.firebaseCollections;
             
             onSnapshot(collection(window.db, "cards"), (snapshot) => {
                 cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -447,6 +538,13 @@
                 secrets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 render();
             });
+
+            onSnapshot(doc(window.db, "agreements", "main"), (docSnap) => {
+                if (docSnap.exists()) {
+                    agreementData = docSnap.data();
+                    renderAgreement();
+                }
+            });
         }
 
         // --- Render Views ---
@@ -455,6 +553,7 @@
             if (currentTab === 'cards') renderCards(filterDate);
             else if (currentTab === 'hobby') renderHobbies();
             else if (currentTab === 'secret') renderSecrets(filterDate);
+            else if (currentTab === 'agreement') renderAgreement();
         }
 
         function renderCards(filterDate = '') {
@@ -599,10 +698,45 @@
             }
         }
 
+        // --- Render Agreement Notebook Section ---
+        function renderAgreement() {
+            const textarea = document.getElementById('agreement-text');
+            const timeDisplay = document.getElementById('agreement-last-updated');
+            
+            if (document.activeElement !== textarea) {
+                textarea.value = agreementData.content || '';
+            }
+            
+            timeDisplay.innerText = agreementData.updatedAt ? `最後更新：${agreementData.updatedAt}` : '最後更新：尚未更新';
+            document.getElementById('agreement-save-status').innerText = '已同步';
+        }
+
+        async function saveAgreementContent() {
+            const content = document.getElementById('agreement-text').value;
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            agreementData = { content, updatedAt: timeStr };
+
+            try {
+                if (window.isFirebaseConfigured) {
+                    const { doc, setDoc } = window.firebaseCollections;
+                    await setDoc(doc(window.db, "agreements", "main"), agreementData);
+                } else {
+                    saveToLocalStorage();
+                }
+                document.getElementById('agreement-save-status').innerText = '儲存成功！';
+                renderAgreement();
+            } catch (err) {
+                console.error("約法三章儲存失敗:", err);
+                alert("儲存失敗！");
+            }
+        }
+
         // --- Secret Section Security / Lock ---
         function unlockSecretView() {
             const inputPin = document.getElementById('secret-pin-input').value;
-            const savedPin = localStorage.getItem('warm_secret_pin') || '741082503410';
+            const savedPin = localStorage.getItem('warm_secret_pin') || '1234';
 
             if (inputPin === savedPin) {
                 isSecretUnlocked = true;
@@ -619,6 +753,45 @@
             document.getElementById('secret-pin-input').value = '';
             document.getElementById('secret-lock-screen').classList.remove('hidden');
             document.getElementById('secret-content-screen').classList.add('hidden');
+        }
+
+        // --- Change Password Control ---
+        function openChangePinModal() {
+            document.getElementById('old-pin-input').value = '';
+            document.getElementById('new-pin-input').value = '';
+            document.getElementById('confirm-pin-input').value = '';
+            document.getElementById('modal-change-pin').classList.remove('hidden');
+        }
+
+        function closeChangePinModal() {
+            document.getElementById('modal-change-pin').classList.add('hidden');
+        }
+
+        function handleChangePin(e) {
+            e.preventDefault();
+            const oldPin = document.getElementById('old-pin-input').value;
+            const newPin = document.getElementById('new-pin-input').value;
+            const confirmPin = document.getElementById('confirm-pin-input').value;
+            const currentPin = localStorage.getItem('warm_secret_pin') || '1234';
+
+            if (oldPin !== currentPin) {
+                alert('舊密碼不正確！');
+                return;
+            }
+
+            if (newPin !== confirmPin) {
+                alert('新密碼與確認密碼不一致！');
+                return;
+            }
+
+            if (!newPin.trim()) {
+                alert('密碼不能為空！');
+                return;
+            }
+
+            localStorage.setItem('warm_secret_pin', newPin.trim());
+            alert('密碼修改成功！下次進入請使用新密碼。');
+            closeChangePinModal();
         }
 
         // --- Secret Section Actions ---
@@ -812,6 +985,7 @@
         function openCreateModal() {
             if (currentTab === 'hobby') return openHobbyModal();
             if (currentTab === 'secret') return openSecretModal();
+            if (currentTab === 'agreement') return;
 
             document.getElementById('card-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-500"></i> 新增卡片';
             document.getElementById('card-edit-id').value = '';
@@ -1076,28 +1250,38 @@
             const cardsBtn = document.getElementById('tab-cards-btn');
             const hobbyBtn = document.getElementById('tab-hobby-btn');
             const secretBtn = document.getElementById('tab-secret-btn');
+            const agreementBtn = document.getElementById('tab-agreement-btn');
+            const addBtn = document.getElementById('action-add-btn');
             const addBtnText = document.getElementById('add-btn-text');
 
             document.getElementById('cards-view').classList.add('hidden');
             document.getElementById('hobby-view').classList.add('hidden');
             document.getElementById('secret-view').classList.add('hidden');
+            document.getElementById('agreement-view').classList.add('hidden');
 
-            cardsBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900';
-            hobbyBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900';
-            secretBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-purple-700';
+            cardsBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900';
+            hobbyBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-amber-900';
+            secretBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-purple-700';
+            agreementBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition text-amber-700 hover:text-teal-700';
+            
+            addBtn.classList.remove('hidden');
 
             if (tab === 'cards') {
                 document.getElementById('cards-view').classList.remove('hidden');
-                cardsBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm';
+                cardsBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm';
                 addBtnText.innerText = '新增卡片';
             } else if (tab === 'hobby') {
                 document.getElementById('hobby-view').classList.remove('hidden');
-                hobbyBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm';
+                hobbyBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-white text-amber-900 shadow-sm';
                 addBtnText.innerText = '新增個人檔案';
             } else if (tab === 'secret') {
                 document.getElementById('secret-view').classList.remove('hidden');
-                secretBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition bg-purple-600 text-white shadow-sm';
+                secretBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-purple-600 text-white shadow-sm';
                 addBtnText.innerText = '新增私密心聲';
+            } else if (tab === 'agreement') {
+                document.getElementById('agreement-view').classList.remove('hidden');
+                agreementBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-teal-600 text-white shadow-sm';
+                addBtn.classList.add('hidden');
             }
             render();
         }
