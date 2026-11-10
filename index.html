@@ -14,7 +14,19 @@
     <!-- Firebase SDK (v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            setDoc, 
+            query, 
+            orderBy,
+            enableIndexedDbPersistence 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAuPfNJ9pN_Yu1gjBarP-JiFEVwFhtIRrg",
@@ -33,6 +45,16 @@
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
+
+                // ⚡ 啟用 Firestore 本地離線快取，解決讀取載入慢的問題
+                enableIndexedDbPersistence(db).catch((err) => {
+                    if (err.code === 'failed-precondition') {
+                        console.warn("離線快取開啟失敗：開啟了多個分頁");
+                    } else if (err.code === 'unimplemented') {
+                        console.warn("當前瀏覽器不支援離線快取");
+                    }
+                });
+
                 window.db = db;
                 window.firebaseCollections = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, query, orderBy };
             } catch (e) {
@@ -911,6 +933,14 @@
                 updatedAt: new Date().toISOString()
             };
 
+            // ⚡【樂觀更新】新增卡片時，直接寫入前端陣列並先更新畫面，達成零延遲體感
+            if (!editId) {
+                const tempId = 'temp-' + Date.now();
+                const tempCard = { id: tempId, comments: [], createdAt: new Date().toISOString(), ...cardData };
+                cards.unshift(tempCard);
+                renderCards(document.getElementById('filter-date').value);
+            }
+
             try {
                 if (window.isFirebaseConfigured) {
                     const { collection, addDoc, doc, updateDoc } = window.firebaseCollections;
@@ -926,7 +956,9 @@
                         const idx = cards.findIndex(c => c.id === editId);
                         if (idx !== -1) cards[idx] = { ...cards[idx], ...cardData };
                     } else {
-                        cards.unshift({ id: Date.now().toString(), comments: [], createdAt: new Date().toISOString(), ...cardData });
+                        // 如果單機模式，把剛才推入的臨時卡片轉成儲存用的 cardData
+                        const tempIdx = cards.findIndex(c => c.id.startsWith('temp-'));
+                        if (tempIdx !== -1) cards[tempIdx].id = Date.now().toString();
                     }
                     saveToLocalStorage();
                 }
